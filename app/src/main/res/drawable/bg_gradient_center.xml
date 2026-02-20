@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Dark base -->
+    <item>
+        <shape>
+            <solid android:color="#0F0F0F"/>
+        </shape>
+    </item>
+
+    <!-- Green radial glow -->
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:type="radial"
+                android:gradientRadius="350dp"
+                android:centerX="0.5"
+                android:centerY="0"
+                android:startColor="#114211"
+                android:endColor="#000000"/>
+        </shape>
+    </item>
+
+</layer-list>
