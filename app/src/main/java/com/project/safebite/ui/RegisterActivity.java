@@ -1,5 +1,7 @@
 package com.project.safebite.ui;
 
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.TextView;
 
@@ -15,6 +17,7 @@ import com.project.safebite.R;
 
 public class RegisterActivity extends AppCompatActivity {
 
+    Context context = RegisterActivity.this;
     TextView tvLogIn;
     MaterialButton btnSignUp;
     TextInputEditText etFullName, etEmail, etPassword, etConfirmPassword;
@@ -38,5 +41,10 @@ public class RegisterActivity extends AppCompatActivity {
         etEmail = findViewById(R.id.etEmail);
         etPassword = findViewById(R.id.etPassword);
         etConfirmPassword = findViewById(R.id.etConfirmPassword);
+
+        btnSignUp.setOnClickListener(v -> {
+            Intent intent = new Intent(context, LoginActivity.class);
+            startActivity(intent);
+        });
     }
 }
