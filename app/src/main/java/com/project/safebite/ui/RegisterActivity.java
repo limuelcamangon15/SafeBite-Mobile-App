@@ -42,7 +42,7 @@ public class RegisterActivity extends AppCompatActivity {
         etPassword = findViewById(R.id.etPassword);
         etConfirmPassword = findViewById(R.id.etConfirmPassword);
 
-        btnSignUp.setOnClickListener(v -> {
+        tvLogIn.setOnClickListener(v -> {
             Intent intent = new Intent(context, LoginActivity.class);
             startActivity(intent);
         });
