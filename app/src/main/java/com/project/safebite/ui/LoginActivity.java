@@ -62,7 +62,9 @@ public class LoginActivity extends AppCompatActivity {
                 UIUtil.hideLoading(context, btnLogIn, pbLogIn, "Log In");
 
                 Intent mainIntent = new Intent(context, MainActivity.class);
+                mainIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(mainIntent);
+                finish();
             },2000);
         });
     }

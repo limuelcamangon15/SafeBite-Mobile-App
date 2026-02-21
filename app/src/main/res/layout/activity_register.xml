@@ -185,8 +185,8 @@
                         android:layout_height="wrap_content"
                         android:text="Sign Up"
                         android:textColor="@color/black"
-                        android:padding="15dp"
-                        app:cornerRadius="10dp"
+                        android:padding="17dp"
+                        app:cornerRadius="16dp"
                         android:backgroundTint="@color/green"/>
 
                     <ProgressBar
