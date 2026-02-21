@@ -1,16 +1,23 @@
 package com.project.safebite.ui;
 
+import android.content.Context;
 import android.os.Bundle;
+import android.view.View;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.fragment.app.Fragment;
 
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.project.safebite.R;
 
 public class MainActivity extends AppCompatActivity {
+
+    Context context = MainActivity.this;
+    BottomNavigationView navBottom;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,29 +31,37 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
-        //transform animation for nav (lift active)
+        navBottom = findViewById(R.id.navBottom);
 
-//        bottomNav.setOnItemSelectedListener(item -> {
-//
-//            View view = bottomNav.findViewById(item.getItemId());
-//
-//            view.animate()
-//                    .scaleX(1.3f)
-//                    .scaleY(1.3f)
-//                    .translationY(-10f)
-//                    .setDuration(200)
-//                    .start();
-//
-//            return true;
-//        });
+        // Load default fragment
+        if (savedInstanceState == null) {
+            loadFragment(new HomeFragment());
 
+            navBottom.setOnItemSelectedListener((item) -> {
 
-        // then reset others
-//        for (int i = 0; i < bottomNav.getChildCount(); i++) {
-//            View child = bottomNav.getChildAt(i);
-//            child.setScaleX(1f);
-//            child.setScaleY(1f);
-//            child.setTranslationY(0f);
-//        }
+                Fragment selectedFragment = null;
+
+                if (item.getItemId() == R.id.navigation_home) {
+                    selectedFragment = new HomeFragment();
+                }
+                else if (item.getItemId() == R.id.navigation_profile) {
+                    selectedFragment = new ProfileFragment();
+                }
+
+                return loadFragment(selectedFragment);
+            });
+        }
     }
+
+    private boolean loadFragment(Fragment fragment) {
+        if (fragment != null) {
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragmentContainer, fragment)
+                    .commit();
+            return true;
+        }
+        return false;
+    }
+
 }
