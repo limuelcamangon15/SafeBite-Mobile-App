@@ -9,32 +9,12 @@
     tools:context=".ui.MainActivity"
     android:background="@drawable/bg_gradient">
 
-    <LinearLayout
+    <!-- Fragment Container -->
+    <FrameLayout
+        android:id="@+id/fragment_container"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
-
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="100dp"
-            android:layout_margin="16dp"
-            app:cardCornerRadius="28dp"
-            app:cardElevation="0dp"
-            app:strokeWidth="1.3dp"
-            app:strokeColor="#20FFFFFF"
-            android:backgroundTint="#1AFFFFFF"/>
-
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="300dp"
-            android:layout_margin="16dp"
-            app:cardCornerRadius="28dp"
-            app:cardElevation="0dp"
-            app:strokeWidth="1.3dp"
-            app:strokeColor="#20FFFFFF"
-            android:backgroundTint="#1AFFFFFF"/>
-    </LinearLayout>
-
+        android:layout_height="match_parent"
+        android:layout_marginBottom="72dp"/>
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/navBottom"
@@ -43,9 +23,9 @@
         android:layout_gravity="bottom"
         android:background="@drawable/nav_bg"
         app:itemIconSize="26dp"
-        app:itemTextColor="@color/nav_selector"
         app:itemIconTint="@color/nav_selector"
-        app:menu="@menu/nav_menu"/>
+        app:itemTextColor="@color/nav_selector"
+        app:menu="@menu/nav_menu" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabScan"
@@ -55,7 +35,7 @@
         app:srcCompat="@drawable/scan_icon"
         android:layout_gravity="bottom|center_horizontal"
         android:layout_marginBottom="45dp"
-        android:backgroundTint="#84DB06"
+        android:backgroundTint="#000000"
         app:elevation="8dp"/>
 
 </FrameLayout>
