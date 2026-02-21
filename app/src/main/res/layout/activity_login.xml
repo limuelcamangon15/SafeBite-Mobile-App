@@ -117,16 +117,31 @@
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <!-- Login Button -->
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnLogIn"
+                <FrameLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Log In"
-                    android:layout_marginTop="20dp"
-                    android:textColor="@color/black"
-                    android:padding="15dp"
-                    app:cornerRadius="10dp"
-                    android:backgroundTint="@color/green"/>
+                    android:layout_marginTop="20dp">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnLogIn"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Log In"
+                        android:textColor="@color/black"
+                        android:padding="15dp"
+                        app:cornerRadius="10dp"
+                        android:backgroundTint="@color/green"/>
+
+                    <ProgressBar
+                        android:id="@+id/pbLogIn"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_gravity="center"
+                        android:visibility="gone"
+                        android:backgroundTint="@color/white"
+                        android:indeterminate="true"/>
+
+                </FrameLayout>
 
             </LinearLayout>
 

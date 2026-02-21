@@ -3,23 +3,31 @@ package com.project.safebite.ui;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.view.View;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.project.safebite.R;
+import com.project.safebite.utils.UIUtil;
 
 public class RegisterActivity extends AppCompatActivity {
 
     Context context = RegisterActivity.this;
     TextView tvLogIn;
     MaterialButton btnSignUp;
+    ProgressBar pbSignUp;
     TextInputEditText etFullName, etEmail, etPassword, etConfirmPassword;
 
     @Override
@@ -32,19 +40,31 @@ public class RegisterActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        initializeViews();
     }
 
     private void initializeViews(){
         tvLogIn = findViewById(R.id.tvLogIn);
-        btnSignUp = findViewById(R.id.btnSignUp);
         etFullName = findViewById(R.id.etFullName);
         etEmail = findViewById(R.id.etEmail);
         etPassword = findViewById(R.id.etPassword);
         etConfirmPassword = findViewById(R.id.etConfirmPassword);
+        btnSignUp = findViewById(R.id.btnSignUp);
+        pbSignUp = findViewById(R.id.pbSignUp);
 
         tvLogIn.setOnClickListener(v -> {
-            Intent intent = new Intent(context, LoginActivity.class);
-            startActivity(intent);
+           finish();
+        });
+
+        btnSignUp.setOnClickListener(v -> {
+            UIUtil.showLoading(context, btnSignUp, pbSignUp);
+            new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                    UIUtil.hideLoading(context, btnSignUp, pbSignUp, "Sign Up");
+                    UIUtil.showSnackbar(findViewById(R.id.activityRegister),"Registered Successfully!");
+            },3000);
         });
     }
+
+
 }

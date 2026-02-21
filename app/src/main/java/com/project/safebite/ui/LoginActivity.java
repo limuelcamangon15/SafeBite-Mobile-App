@@ -3,6 +3,9 @@ package com.project.safebite.ui;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
@@ -12,8 +15,10 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.project.safebite.R;
+import com.project.safebite.utils.UIUtil;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -21,6 +26,7 @@ public class LoginActivity extends AppCompatActivity {
     TextView tvSignUp;
     TextInputEditText etEmail, etPassword;
     MaterialButton btnLogIn;
+    ProgressBar pbLogIn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,11 +47,23 @@ public class LoginActivity extends AppCompatActivity {
         etEmail = findViewById(R.id.etEmail);
         etPassword = findViewById(R.id.etPassword);
         btnLogIn = findViewById(R.id.btnLogIn);
+        pbLogIn = findViewById(R.id.pbLogIn);
 
         tvSignUp.setOnClickListener(v -> {
             Intent intent = new Intent(context, RegisterActivity.class);
 
             startActivity(intent);
+        });
+
+        btnLogIn.setOnClickListener(v -> {
+            UIUtil.showLoading(context, btnLogIn, pbLogIn);
+            UIUtil.showSnackbar(findViewById(R.id.activityLogin),"Logged In Successfully!");
+            new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                UIUtil.hideLoading(context, btnLogIn, pbLogIn, "Log In");
+
+                Intent mainIntent = new Intent(context, MainActivity.class);
+                startActivity(mainIntent);
+            },2000);
         });
     }
 }
