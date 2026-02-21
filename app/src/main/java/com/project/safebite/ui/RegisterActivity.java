@@ -1,6 +1,7 @@
 package com.project.safebite.ui;
 
 import android.os.Bundle;
+import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -8,9 +9,15 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.textfield.TextInputEditText;
 import com.project.safebite.R;
 
 public class RegisterActivity extends AppCompatActivity {
+
+    TextView tvLogIn;
+    MaterialButton btnSignUp;
+    TextInputEditText etFullName, etEmail, etPassword, etConfirmPassword;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,5 +29,14 @@ public class RegisterActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+    }
+
+    private void initializeViews(){
+        tvLogIn = findViewById(R.id.tvLogIn);
+        btnSignUp = findViewById(R.id.btnSignUp);
+        etFullName = findViewById(R.id.etFullName);
+        etEmail = findViewById(R.id.etEmail);
+        etPassword = findViewById(R.id.etPassword);
+        etConfirmPassword = findViewById(R.id.etConfirmPassword);
     }
 }
