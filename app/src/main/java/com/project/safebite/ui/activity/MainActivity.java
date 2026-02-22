@@ -1,8 +1,7 @@
-package com.project.safebite.ui;
+package com.project.safebite.ui.activity;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.view.View;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -13,6 +12,9 @@ import androidx.fragment.app.Fragment;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.project.safebite.R;
+import com.project.safebite.ui.fragment.HomeFragment;
+import com.project.safebite.ui.fragment.ProfileFragment;
+import com.project.safebite.ui.fragment.ScanFragment;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -40,12 +42,16 @@ public class MainActivity extends AppCompatActivity {
             navBottom.setOnItemSelectedListener((item) -> {
 
                 Fragment selectedFragment = null;
+                int currentFragmentSelectedId = item.getItemId();
 
-                if (item.getItemId() == R.id.navigation_home) {
+                if (currentFragmentSelectedId == R.id.navigation_home) {
                     selectedFragment = new HomeFragment();
                 }
-                else if (item.getItemId() == R.id.navigation_profile) {
+                else if (currentFragmentSelectedId == R.id.navigation_profile) {
                     selectedFragment = new ProfileFragment();
+                }
+                else if (currentFragmentSelectedId == R.id.navigation_scan){
+                    selectedFragment = new ScanFragment();
                 }
 
                 return loadFragment(selectedFragment);

@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".ui.MainActivity"
+    tools:context=".ui.activity.MainActivity"
     android:background="@drawable/bg_gradient">
 
     <!-- Fragment Container -->
@@ -26,16 +26,5 @@
         app:itemIconTint="@color/nav_selector"
         app:itemTextColor="@color/nav_selector"
         app:menu="@menu/nav_menu" />
-
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fabScan"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:contentDescription="Scan"
-        app:srcCompat="@drawable/scan_icon"
-        android:layout_gravity="bottom|center_horizontal"
-        android:layout_marginBottom="45dp"
-        android:backgroundTint="#000000"
-        app:elevation="8dp"/>
 
 </FrameLayout>

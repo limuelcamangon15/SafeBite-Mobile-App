@@ -33,6 +33,7 @@ android {
 
 dependencies {
 
+    implementation("com.google.mlkit:barcode-scanning:17.3.0")
     implementation("com.google.android.material:material:1.13.0")
     implementation("com.android.volley:volley:1.2.1")
     implementation(libs.appcompat)

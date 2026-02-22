@@ -5,7 +5,7 @@
     android:id="@+id/activityLogin"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.LoginActivity"
+    tools:context=".ui.activity.LoginActivity"
     android:background="@drawable/bg_gradient_center">
 
     <!-- Scrollable container -->

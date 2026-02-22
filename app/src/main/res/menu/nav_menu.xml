@@ -12,6 +12,11 @@
         android:title="History" />
 
     <item
+        android:id="@+id/navigation_scan"
+        android:icon="@drawable/scan_icon"
+        android:title="Scan Item" />
+
+    <item
         android:id="@+id/navigation_saved"
         android:icon="@drawable/saved_icon"
         android:title="Saved" />
