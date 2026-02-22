@@ -12,13 +12,16 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.textfield.TextInputEditText;
 import com.project.safebite.R;
 import com.project.safebite.utils.UIUtil;
 
 public class ScanFragment extends Fragment {
 
     View parent;
-
+    MaterialButton btnScan;
+    TextInputEditText etBarcode;
     private static final int CAMERA_PERMISSION_CODE = 100;
 
     public ScanFragment() {
@@ -37,14 +40,18 @@ public class ScanFragment extends Fragment {
        View view = inflater.inflate(R.layout.fragment_scan, container, false);
         parent = view;
 
-       if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED){
-            requestPermissions(new String[]{Manifest.permission.CAMERA}, CAMERA_PERMISSION_CODE);
-       }
-       else{
-            startScanner();
-       }
+        initializeViews(view);
 
         return view;
+    }
+
+    private void askCameraPermission(){
+        if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED){
+            requestPermissions(new String[]{Manifest.permission.CAMERA}, CAMERA_PERMISSION_CODE);
+        }
+        else{
+            startScanner();
+        }
     }
 
     @Override
@@ -62,6 +69,12 @@ public class ScanFragment extends Fragment {
     }
 
     public void startScanner(){
-        UIUtil.showSnackbar(parent, "Burat");
+        UIUtil.showSnackbar(parent, "Access Granted");
+    }
+
+    private void initializeViews(View view){
+        btnScan = view.findViewById(R.id.btnScan);
+
+        btnScan.setOnClickListener(v -> askCameraPermission());
     }
 }
