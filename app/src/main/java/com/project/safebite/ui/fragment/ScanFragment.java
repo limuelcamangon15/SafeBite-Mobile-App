@@ -1,6 +1,7 @@
 package com.project.safebite.ui.fragment;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 
@@ -15,13 +16,27 @@ import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.project.safebite.R;
 import com.project.safebite.utils.UIUtil;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.List;
+
 public class ScanFragment extends Fragment {
 
+    Context context;
     View parent;
     MaterialButton btnScan;
     TextInputEditText etBarcode;
@@ -76,6 +91,7 @@ public class ScanFragment extends Fragment {
     }
 
     private void initializeViews(View view){
+        context = requireContext();
         btnScan = view.findViewById(R.id.btnScan);
         etBarcode = view.findViewById(R.id.etBarcode);
 
@@ -93,8 +109,42 @@ public class ScanFragment extends Fragment {
         });
     }
     private void searchProduct(String barcode) {
-        UIUtil.showSnackbar(parent,barcode);
 
-        //TODO: GET req to openfoodfacts api here
+        RequestQueue r = Volley.newRequestQueue(context);
+
+        String url = "https://world.openfoodfacts.net/api/v2/product/"+barcode+"?fields=product_name,brands,image_url,ingredients_text,allergens_tags,nutrition_grades,categories_tags,nutriments";
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject jsonObject) {
+                try {
+                    JSONObject product = jsonObject.getJSONObject("product");
+
+                    String productName = product.getString("product_name");
+                    String brands = product.getString("brands");
+
+                    JSONArray allergenArray = product.getJSONArray("allergens_tags");
+
+                    ArrayList<String> allergies = new ArrayList<>();
+
+
+                    for(int i = 0; i < allergenArray.length(); i++){
+                        allergies.add(allergenArray.get(i).toString());
+                    }
+
+                } catch (JSONException e) {
+                    throw new RuntimeException(e);
+                }
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError volleyError) {
+                UIUtil.showSnackbar(parent, "Failed getting data of "+barcode);
+            }
+        });
+
+        r.add(jsonObjectRequest);
     }
+
 }
