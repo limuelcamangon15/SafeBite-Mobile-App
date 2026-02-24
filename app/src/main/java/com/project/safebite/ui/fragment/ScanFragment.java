@@ -14,6 +14,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.Request;
@@ -22,6 +24,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.bumptech.glide.Glide;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.project.safebite.R;
@@ -40,6 +43,8 @@ public class ScanFragment extends Fragment {
     View parent;
     MaterialButton btnScan;
     TextInputEditText etBarcode;
+    TextView tvName, tvBrand, tvAllergens;
+    ImageView ivImage;
     private static final int CAMERA_PERMISSION_CODE = 100;
 
     public ScanFragment() {
@@ -94,6 +99,10 @@ public class ScanFragment extends Fragment {
         context = requireContext();
         btnScan = view.findViewById(R.id.btnScan);
         etBarcode = view.findViewById(R.id.etBarcode);
+        tvName = view.findViewById(R.id.tvName);
+        tvBrand = view.findViewById(R.id.tvBrand);
+        tvAllergens = view.findViewById(R.id.tvAllergens);
+        ivImage = view.findViewById(R.id.ivImage);
 
         btnScan.setOnClickListener(v -> askCameraPermission());
 
@@ -108,40 +117,62 @@ public class ScanFragment extends Fragment {
             return false;
         });
     }
+
+    private void updateUI(String imageUrl, String name, String brand, List<String> allergens){
+        Glide.with(parent)
+                .load(imageUrl)
+                .into(ivImage);
+
+        tvName.setText(name);
+        tvBrand.setText(brand);
+        tvAllergens.setText(android.text.TextUtils.join("\n", allergens));
+    }
     private void searchProduct(String barcode) {
 
         RequestQueue r = Volley.newRequestQueue(context);
 
         String url = "https://world.openfoodfacts.net/api/v2/product/"+barcode+"?fields=product_name,brands,image_url,ingredients_text,allergens_tags,nutrition_grades,categories_tags,nutriments";
 
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
-            @Override
-            public void onResponse(JSONObject jsonObject) {
-                try {
-                    JSONObject product = jsonObject.getJSONObject("product");
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
+                Request.Method.GET,
+                url,
+                null,
+                response -> {
 
-                    String productName = product.getString("product_name");
-                    String brands = product.getString("brands");
+                    try {
+                        int status = response.optInt("status");
+                        if (status == 0) {
+                            UIUtil.showSnackbar(parent, "Product not found");
+                            return;
+                        }
 
-                    JSONArray allergenArray = product.getJSONArray("allergens_tags");
+                        JSONObject product = response.optJSONObject("product");
+                        if (product == null) {
+                            UIUtil.showSnackbar(parent, "No product data available");
+                            return;
+                        }
 
-                    ArrayList<String> allergies = new ArrayList<>();
+                        String image = product.optString("image_url", "Image is not available");
+                        String productName = product.optString("product_name", "Name is not available");
+                        String brands = product.optString("brands", "Brand is not available");
+                        JSONArray allergenArray = product.optJSONArray("allergens_tags");
 
+                        List<String> allergies = new ArrayList<>();
+                        if(allergenArray != null){
+                            for (int i = 0; i < allergenArray.length(); i++){
+                                allergies.add(allergenArray.getString(i));
+                            }
+                        }
 
-                    for(int i = 0; i < allergenArray.length(); i++){
-                        allergies.add(allergenArray.get(i).toString());
+                        updateUI(image, productName, brands, allergies);
+
                     }
-
-                } catch (JSONException e) {
-                    throw new RuntimeException(e);
-                }
-
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError volleyError) {
-                UIUtil.showSnackbar(parent, "Failed getting data of "+barcode);
-            }
+                    catch (Exception e){
+                        throw new RuntimeException("Failed Fetching Data");
+                    }
+                },
+                        error -> {
+                    UIUtil.showSnackbar(parent, "Error: "+ error);
         });
 
         r.add(jsonObjectRequest);
