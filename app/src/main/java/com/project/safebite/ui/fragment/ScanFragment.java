@@ -1,11 +1,19 @@
 package com.project.safebite.ui.fragment;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.media.Image;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.camera.core.CameraSelector;
+import androidx.camera.core.ImageAnalysis;
+import androidx.camera.core.ImageProxy;
+import androidx.camera.core.Preview;
+import androidx.camera.lifecycle.ProcessCameraProvider;
+import androidx.camera.view.PreviewView;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
@@ -27,6 +35,12 @@ import com.android.volley.toolbox.Volley;
 import com.bumptech.glide.Glide;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.mlkit.vision.barcode.BarcodeScanner;
+import com.google.mlkit.vision.barcode.BarcodeScannerOptions;
+import com.google.mlkit.vision.barcode.BarcodeScanning;
+import com.google.mlkit.vision.barcode.common.Barcode;
+import com.google.mlkit.vision.common.InputImage;
 import com.project.safebite.R;
 import com.project.safebite.utils.UIUtil;
 
@@ -36,6 +50,8 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
 
 public class ScanFragment extends Fragment {
 
@@ -45,6 +61,8 @@ public class ScanFragment extends Fragment {
     TextInputEditText etBarcode;
     TextView tvName, tvBrand, tvAllergens;
     ImageView ivImage;
+    PreviewView pvScanner;
+    BarcodeScanner barcodeScanner;
     private static final int CAMERA_PERMISSION_CODE = 100;
 
     public ScanFragment() {
@@ -93,6 +111,82 @@ public class ScanFragment extends Fragment {
 
     public void startScanner(){
         UIUtil.showSnackbar(parent, "Access Granted");
+
+        pvScanner.setVisibility(View.VISIBLE);
+
+        ListenableFuture<ProcessCameraProvider> cameraProviderFuture =
+                ProcessCameraProvider.getInstance(requireContext());
+
+        cameraProviderFuture.addListener(() -> {
+            try {
+                ProcessCameraProvider cameraProvider = cameraProviderFuture.get();
+
+                Preview preview = new Preview.Builder().build();
+                preview.setSurfaceProvider(pvScanner.getSurfaceProvider());
+
+                ImageAnalysis imageAnalysis = new ImageAnalysis.Builder()
+                                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                                .build();
+
+                imageAnalysis.setAnalyzer(
+                        Executors.newSingleThreadExecutor(),
+                        this::processImageProxy
+                );
+
+                CameraSelector cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA;
+
+                cameraProvider.unbindAll();
+
+                cameraProvider.bindToLifecycle(getViewLifecycleOwner(), cameraSelector, preview,imageAnalysis);
+            }
+            catch (ExecutionException | InterruptedException e) {
+                e.printStackTrace();
+            }
+        }, ContextCompat.getMainExecutor(requireContext()));
+    }
+
+    @SuppressLint("UnsafeOptInUsageError")
+    private void processImageProxy(ImageProxy imageProxy) {
+
+        Image mediaImage = imageProxy.getImage();
+
+        if (mediaImage != null) {
+
+            InputImage image = InputImage.fromMediaImage(mediaImage, imageProxy.getImageInfo().getRotationDegrees());
+
+            barcodeScanner.process(image).addOnSuccessListener(barcodes -> {
+
+                        for (Barcode barcode : barcodes) {
+
+                            String value = barcode.getRawValue();
+
+                            if (value != null) {
+
+                                requireActivity().runOnUiThread(() -> {
+                                    etBarcode.setText(value);
+                                    searchProduct(value);
+                                    pvScanner.setVisibility(View.GONE);
+                                });
+
+                                imageProxy.close();
+                                return; // stop after first scan
+                            }
+                        }
+                    })
+                    .addOnFailureListener(Throwable::printStackTrace)
+                    .addOnCompleteListener((task) -> imageProxy.close());
+
+        } else {
+            imageProxy.close();
+        }
+    }
+
+    private void initializeBarcodeScanner(){
+        BarcodeScannerOptions options = new BarcodeScannerOptions.Builder()
+                .setBarcodeFormats(Barcode.FORMAT_ALL_FORMATS)
+                .build();
+
+        barcodeScanner = BarcodeScanning.getClient(options);
     }
 
     private void initializeViews(View view){
@@ -103,6 +197,9 @@ public class ScanFragment extends Fragment {
         tvBrand = view.findViewById(R.id.tvBrand);
         tvAllergens = view.findViewById(R.id.tvAllergens);
         ivImage = view.findViewById(R.id.ivImage);
+        pvScanner = view.findViewById(R.id.pvScanner);
+
+        initializeBarcodeScanner();
 
         btnScan.setOnClickListener(v -> askCameraPermission());
 

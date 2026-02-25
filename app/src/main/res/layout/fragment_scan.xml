@@ -90,7 +90,6 @@
                 app:iconPadding="12dp"
                 app:iconSize="24dp"
                 android:backgroundTint="@color/green"/>
-
         </LinearLayout>
 
 
@@ -123,6 +122,13 @@
                         android:layout_gravity="center"
                         android:textColor="@color/white"
                         android:alpha="0.8"/>
+
+                    <androidx.camera.view.PreviewView
+                        android:id="@+id/pvScanner"
+                        android:layout_width="match_parent"
+                        android:layout_height="300dp"
+                        android:layout_margin="10dp"
+                        android:visibility="gone"/>
 
                     <ImageView
                         android:id="@+id/ivImage"
