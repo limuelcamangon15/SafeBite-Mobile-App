@@ -26,9 +26,15 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Network;
+import com.android.volley.NoConnectionError;
+import com.android.volley.ParseError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
+import com.android.volley.ServerError;
+import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
@@ -63,6 +69,7 @@ public class ScanFragment extends Fragment {
     ImageView ivImage;
     PreviewView pvScanner;
     BarcodeScanner barcodeScanner;
+    private ProcessCameraProvider cameraProvider;
     private static final int CAMERA_PERMISSION_CODE = 100;
 
     public ScanFragment() {
@@ -109,9 +116,14 @@ public class ScanFragment extends Fragment {
         }
     }
 
-    public void startScanner(){
-        UIUtil.showSnackbar(parent, "Access Granted");
+    private void stopScanner(){
+        if(cameraProvider != null){
+            cameraProvider.unbindAll();
+        }
+        pvScanner.setVisibility(View.GONE);
+    }
 
+    public void startScanner(){
         pvScanner.setVisibility(View.VISIBLE);
 
         ListenableFuture<ProcessCameraProvider> cameraProviderFuture =
@@ -119,7 +131,7 @@ public class ScanFragment extends Fragment {
 
         cameraProviderFuture.addListener(() -> {
             try {
-                ProcessCameraProvider cameraProvider = cameraProviderFuture.get();
+                cameraProvider = cameraProviderFuture.get();
 
                 Preview preview = new Preview.Builder().build();
                 preview.setSurfaceProvider(pvScanner.getSurfaceProvider());
@@ -136,7 +148,6 @@ public class ScanFragment extends Fragment {
                 CameraSelector cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA;
 
                 cameraProvider.unbindAll();
-
                 cameraProvider.bindToLifecycle(getViewLifecycleOwner(), cameraSelector, preview,imageAnalysis);
             }
             catch (ExecutionException | InterruptedException e) {
@@ -165,7 +176,7 @@ public class ScanFragment extends Fragment {
                                 requireActivity().runOnUiThread(() -> {
                                     etBarcode.setText(value);
                                     searchProduct(value);
-                                    pvScanner.setVisibility(View.GONE);
+                                    stopScanner();
                                 });
 
                                 imageProxy.close();
@@ -268,8 +279,25 @@ public class ScanFragment extends Fragment {
                         throw new RuntimeException("Failed Fetching Data");
                     }
                 },
-                        error -> {
-                    UIUtil.showSnackbar(parent, "Error: "+ error);
+                error -> {
+                    if (error instanceof TimeoutError || error instanceof NoConnectionError) {
+                        UIUtil.showSnackbar(parent, "Check your internet connection");
+                    }
+                    else if (error instanceof AuthFailureError) {
+                        UIUtil.showSnackbar(parent, "Authentication failed");
+                    }
+                    else if (error instanceof ServerError) {
+                        UIUtil.showSnackbar(parent, "Server error, please try again later");
+                    }
+                    else if (error instanceof Network) {
+                        UIUtil.showSnackbar(parent, "Network error, please try again");
+                    }
+                    else if (error instanceof ParseError) {
+                        UIUtil.showSnackbar(parent, "Failed to read server response");
+                    }
+                    else {
+                        UIUtil.showSnackbar(parent, "Unexpected error: " + error.toString());
+                    }
         });
 
         r.add(jsonObjectRequest);
