@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "820700698879",
+    "project_id": "safebite-c8dd8",
+    "storage_bucket": "safebite-c8dd8.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:820700698879:android:5e9fb46a9d678839d294ca",
+        "android_client_info": {
+          "package_name": "com.project.safebite"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCjV-AWX9PIqWwCpXJuITK9aJ09eIrhX8Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

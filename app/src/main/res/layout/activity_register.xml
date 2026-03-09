@@ -20,14 +20,15 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:gravity="center_horizontal"
-            android:padding="15dp">
+            android:paddingLeft="15dp"
+            android:paddingBottom="15dp"
+            android:paddingRight="15dp">
 
             <!-- Top Logo and Welcome Text -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:layout_marginTop="10dp"
                 android:gravity="center_horizontal">
 
                 <ImageView
@@ -41,8 +42,7 @@
                     android:text="Create your account"
                     android:textColor="@color/white"
                     android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:layout_marginTop="8dp"/>
+                    android:textStyle="bold"/>
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -68,6 +68,7 @@
                     android:text="Full Name"
                     android:textColor="@color/white"/>
                 <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilFullName"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="Enter you full name"
@@ -94,6 +95,7 @@
                     android:textColor="@color/white"
                     android:layout_marginTop="5dp"/>
                 <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilEmail"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="Enter your email"
@@ -120,6 +122,7 @@
                     android:textColor="@color/white"
                     android:layout_marginTop="5dp"/>
                 <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilPassword"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="Enter your password"
@@ -148,6 +151,7 @@
                     android:textColor="@color/white"
                     android:layout_marginTop="5dp"/>
                 <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilConfirmPassword"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="Confirm your password"

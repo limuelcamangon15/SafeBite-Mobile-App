@@ -268,7 +268,9 @@ public class ScanFragment extends Fragment {
                         List<String> allergies = new ArrayList<>();
                         if(allergenArray != null){
                             for (int i = 0; i < allergenArray.length(); i++){
-                                allergies.add(allergenArray.getString(i));
+                                String item = allergenArray.getString(i).substring(3, allergenArray.getString(i).length());
+
+                                allergies.add(item);
                             }
                         }
 
@@ -287,6 +289,10 @@ public class ScanFragment extends Fragment {
                         UIUtil.showSnackbar(parent, "Authentication failed");
                     }
                     else if (error instanceof ServerError) {
+                        if (error.networkResponse != null && error.networkResponse.statusCode == 404) {
+                            UIUtil.showSnackbar(parent, "Product not found");
+                            return;
+                        }
                         UIUtil.showSnackbar(parent, "Server error, please try again later");
                     }
                     else if (error instanceof Network) {
@@ -304,3 +310,5 @@ public class ScanFragment extends Fragment {
     }
 
 }
+
+
