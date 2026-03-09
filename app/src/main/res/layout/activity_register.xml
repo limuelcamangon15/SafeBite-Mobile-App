@@ -71,7 +71,7 @@
                     android:id="@+id/tilFullName"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Enter you full name"
+                    android:hint="Enter your full name"
                     app:boxBackgroundMode="outline"
                     app:boxStrokeWidth="0.1dp"
                     app:boxCornerRadiusTopStart="16dp"

@@ -1,6 +1,7 @@
 package com.project.safebite.ui.activity;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -19,11 +20,13 @@ import androidx.core.view.WindowInsetsCompat;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
+import com.google.firebase.auth.FirebaseAuth;
 import com.project.safebite.R;
 import com.project.safebite.utils.UIUtil;
 
 public class RegisterActivity extends AppCompatActivity {
 
+    FirebaseAuth auth;
     View registerView;
     Context context = RegisterActivity.this;
     TextView tvLogIn;
@@ -47,6 +50,8 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     private void initializeViews(){
+        auth = FirebaseAuth.getInstance();
+
         registerView  = findViewById(R.id.activityRegister);
 
         tvLogIn = findViewById(R.id.tvLogIn);
@@ -74,10 +79,10 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     private void createAccount() {
-        String email = etEmail.getText().toString();
-        String fullName = etFullName.getText().toString();
-        String password = etPassword.getText().toString();
-        String confirmPassword = etConfirmPassword.getText().toString();
+        String email = etEmail.getText().toString().trim();
+        String fullName = etFullName.getText().toString().trim();
+        String password = etPassword.getText().toString().trim();
+        String confirmPassword = etConfirmPassword.getText().toString().trim();
 
         if(fullName.isEmpty() && email.isEmpty() && password.isEmpty() && confirmPassword.isEmpty()){
             tilFullName.setError("Full Name is required.");
@@ -113,14 +118,27 @@ public class RegisterActivity extends AppCompatActivity {
             return;
         }
 
-
         UIUtil.showLoading(context, btnSignUp, pbSignUp);
 
-        new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            UIUtil.hideLoading(context, btnSignUp, pbSignUp, "Sign Up");
+        auth.createUserWithEmailAndPassword(email, password)
+                .addOnCompleteListener(task -> {
 
-            UIUtil.showSnackbar(registerView,"Registered Successfully!");
-        },3000);
+            if(task.isSuccessful()){
+                UIUtil.hideLoading(context, btnSignUp, pbSignUp, "Sign Up");
+
+                UIUtil.showSnackbar(registerView,"Registered Successfully!");
+
+                Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
+                //short delay
+                new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                    startActivity(intent);
+                },1200);
+
+            }
+            else{
+                UIUtil.showSnackbar(registerView,"Failed to register, please try again.");
+            }
+        });
     }
 
     private void setRealtimeEditTextListener(){

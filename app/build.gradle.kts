@@ -34,6 +34,7 @@ android {
 
 dependencies {
 
+    implementation("com.google.firebase:firebase-auth:24.0.1")
     implementation(platform("com.google.firebase:firebase-bom:34.10.0"))
     implementation("androidx.camera:camera-camera2:1.3.1")
     implementation("androidx.camera:camera-lifecycle:1.3.1")
