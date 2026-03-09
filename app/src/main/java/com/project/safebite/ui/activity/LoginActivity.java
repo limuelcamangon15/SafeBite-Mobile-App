@@ -100,6 +100,7 @@ public class LoginActivity extends AppCompatActivity {
                             if(task.isSuccessful()){
                                 UIUtil.hideLoading(context, btnLogIn, pbLogIn, "Log In");
 
+                                //short delay
                                 new Handler(Looper.getMainLooper()).postDelayed(() -> {
                                     Intent mainIntent = new Intent(context, MainActivity.class);
                                     mainIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
