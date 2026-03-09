@@ -128,7 +128,7 @@ public class RegisterActivity extends AppCompatActivity {
 
                 UIUtil.showSnackbar(registerView,"Registered Successfully!");
 
-                Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
+                Intent intent = new Intent(context, LoginActivity.class);
                 //short delay
                 new Handler(Looper.getMainLooper()).postDelayed(() -> {
                     startActivity(intent);
@@ -137,6 +137,8 @@ public class RegisterActivity extends AppCompatActivity {
             }
             else{
                 UIUtil.showSnackbar(registerView,"Failed to register, please try again.");
+
+                UIUtil.hideLoading(context, btnSignUp, pbSignUp, "Sign Up");
             }
         });
     }
