@@ -21,7 +21,11 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.project.safebite.R;
+import com.project.safebite.constants.DatabaseConstants;
+import com.project.safebite.model.User;
 import com.project.safebite.utils.UIUtil;
 
 public class RegisterActivity extends AppCompatActivity {
@@ -120,27 +124,45 @@ public class RegisterActivity extends AppCompatActivity {
 
         UIUtil.showLoading(context, btnSignUp, pbSignUp);
 
+// Add to auth table
         auth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(task -> {
 
-            if(task.isSuccessful()){
-                UIUtil.hideLoading(context, btnSignUp, pbSignUp, "Sign Up");
+                    if (task.isSuccessful()) {
 
-                UIUtil.showSnackbar(registerView,"Registered Successfully!");
+                        // Get UID of the newly created user
+                        String uid = auth.getCurrentUser().getUid();
 
-                Intent intent = new Intent(context, LoginActivity.class);
-                //short delay
-                new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                    startActivity(intent);
-                },1200);
+                        // Prepare user object
+                        User user = new User(fullName, email);
 
-            }
-            else{
-                UIUtil.showSnackbar(registerView,"Failed to register, please try again.");
+                        // Add to Realtime Database under "users/uid"
+                        FirebaseDatabase database = FirebaseDatabase.getInstance(DatabaseConstants.DATABASE_URL);
+                        DatabaseReference ref = database.getReference("users").child(uid);
 
-                UIUtil.hideLoading(context, btnSignUp, pbSignUp, "Sign Up");
-            }
-        });
+                        ref.setValue(user)
+                                .addOnCompleteListener(dbTask -> {
+                                    UIUtil.hideLoading(context, btnSignUp, pbSignUp, "Sign Up");
+                                    UIUtil.showSnackbar(registerView, "Registered Successfully!");
+
+                                    Intent intent = new Intent(context, LoginActivity.class);
+
+                                    // Short delay before navigating
+                                    new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                                        startActivity(intent);
+                                    }, 1200);
+                                })
+                                .addOnFailureListener(e -> {
+                                    UIUtil.hideLoading(context, btnSignUp, pbSignUp, "Sign Up");
+                                    UIUtil.showSnackbar(registerView, "Failed to save user data: ");
+                                });
+
+                    } else {
+                        UIUtil.showSnackbar(registerView, "Failed to register, please try again.");
+                        UIUtil.hideLoading(context, btnSignUp, pbSignUp, "Sign Up");
+                    }
+                });
+
     }
 
     private void setRealtimeEditTextListener(){

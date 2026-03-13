@@ -1,51 +1,454 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.fragment.ProfileFragment"
-    android:background="@drawable/bg_gradient">
+    android:background="@drawable/bg_gradient"
+    tools:context=".ui.fragment.ProfileFragment">
 
-    <LinearLayout
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <!-- PROFILE CARD -->
 
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
-            android:layout_height="100dp"
-            android:layout_margin="16dp"
+            android:layout_height="wrap_content"
             app:cardCornerRadius="28dp"
             app:cardElevation="0dp"
             app:strokeWidth="1.3dp"
             app:strokeColor="#20FFFFFF"
-            android:backgroundTint="#1AFFFFFF"/>
-
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="300dp"
-            android:layout_margin="16dp"
-            app:cardCornerRadius="28dp"
-            app:cardElevation="0dp"
-            app:strokeWidth="1.3dp"
-            app:strokeColor="#20FFFFFF"
-            android:backgroundTint="#1AFFFFFF">
+            android:backgroundTint="#101010">
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="10dp">
+                android:padding="20dp">
 
+                <!-- ALLERGENS TITLE -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="PROFILE"
-                    android:textColor="@color/black"/>
+                    android:layout_marginBottom="10dp"
+                    android:text="My Profile"
+                    android:textColor="@color/white"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <!-- FULL NAME -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilFullName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Full Name"
+                    app:boxBackgroundMode="outline"
+                    app:boxCornerRadiusBottomEnd="16dp"
+                    app:boxCornerRadiusBottomStart="16dp"
+                    app:boxCornerRadiusTopEnd="16dp"
+                    app:boxCornerRadiusTopStart="16dp">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etFullName"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:enabled="false"
+                        android:textColor="@color/white" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:layout_width="30dp"
+                        android:layout_height="match_parent"
+                        android:src="@drawable/email_icon"/>
+
+                    <TextView
+                        android:id="@+id/tvEmail"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:text="Email Address:"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginLeft="5dp"
+                        android:textColor="#8CFFFFFF"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
 
             </LinearLayout>
+
         </com.google.android.material.card.MaterialCardView>
 
-    </LinearLayout>
+
+            <!-- ALLERGENS SECTION -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="28dp"
+                app:cardElevation="0dp"
+                android:layout_marginTop="10dp"
+                app:strokeWidth="1.3dp"
+                app:strokeColor="#20FFFFFF"
+                android:backgroundTint="#101010">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <!-- ALLERGENS TITLE -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="10dp"
+                        android:text="My Allergens"
+                        android:textColor="@color/white"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+                    <!-- Notice Box -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:cardCornerRadius="20dp"
+                        app:cardElevation="0dp"
+                        app:strokeWidth="1dp"
+                        app:strokeColor="#20FFFFFF"
+                        android:backgroundTint="#14928E8E">
+
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:padding="16dp">
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:alpha="0.9"
+                                android:text="Please select all allergens that apply to you. This helps us provide safer recommendations."
+                                android:textColor="@color/white"
+                                android:textSize="14sp" />
+                        </LinearLayout>
+
+                    </com.google.android.material.card.MaterialCardView>
+
+
+                    <!-- MATERIAL CHECKBOX GRID OF OPTIONS -->
+                    <GridLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:columnCount="2">
+
+                        <com.google.android.material.checkbox.MaterialCheckBox
+                            android:id="@+id/cbMilk"
+                            android:text="Milk"
+                            android:textColor="@color/white"
+                            android:enabled="false"/>
+
+                        <com.google.android.material.checkbox.MaterialCheckBox
+                            android:id="@+id/cbEggs"
+                            android:text="Eggs"
+                            android:textColor="@color/white"
+                            android:enabled="false"/>
+
+                        <com.google.android.material.checkbox.MaterialCheckBox
+                            android:id="@+id/cbPeanuts"
+                            android:text="Peanuts"
+                            android:textColor="@color/white"
+                            android:enabled="false"/>
+
+                        <com.google.android.material.checkbox.MaterialCheckBox
+                            android:id="@+id/cbTreeNuts"
+                            android:text="Tree Nuts"
+                            android:textColor="@color/white"
+                            android:enabled="false"/>
+
+                        <com.google.android.material.checkbox.MaterialCheckBox
+                            android:id="@+id/cbSoybeans"
+                            android:text="Soybeans"
+                            android:textColor="@color/white"
+                            android:enabled="false"/>
+
+                        <com.google.android.material.checkbox.MaterialCheckBox
+                            android:id="@+id/cbWheat"
+                            android:text="Wheat / Gluten"
+                            android:textColor="@color/white"
+                            android:enabled="false"/>
+
+                        <com.google.android.material.checkbox.MaterialCheckBox
+                            android:id="@+id/cbFish"
+                            android:text="Fish"
+                            android:textColor="@color/white"
+                            android:enabled="false"/>
+
+                        <com.google.android.material.checkbox.MaterialCheckBox
+                            android:id="@+id/cbShellfish"
+                            android:text="Shellfish"
+                            android:textColor="@color/white"
+                            android:enabled="false"/>
+
+                        <com.google.android.material.checkbox.MaterialCheckBox
+                            android:id="@+id/cbSesame"
+                            android:text="Sesame"
+                            android:textColor="@color/white"
+                            android:enabled="false"/>
+
+                    </GridLayout>
+
+
+                    <!-- ACTION BUTTONS -->
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="24dp"
+                        android:gravity="end">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnEdit"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Edit"
+                            app:cornerRadius="16dp"
+                            app:icon="@drawable/edit_icon"
+                            app:iconTint="@null"
+                            android:textColor="@color/white"
+                            android:backgroundTint="@color/gray"/>
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnSave"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Save"
+                            app:cornerRadius="16dp"
+                            app:icon="@drawable/check_icon"
+                            app:iconTint="@null"
+                            android:layout_marginStart="10dp"
+                            android:textColor="@color/white"
+                            android:backgroundTint="@color/dark_green"
+                            android:visibility="gone"/>
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+
+            <!-- Bottom Buttons COntainer-->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="28dp"
+                android:layout_marginTop="10dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="1.3dp"
+                app:strokeColor="#20FFFFFF"
+                android:backgroundTint="#101010">
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="10dp">
+
+                    <!-- Additional Infor TITLE -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="10dp"
+                        android:text="Additional Informations"
+                        android:textColor="@color/white"
+                        android:textSize="16sp"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginLeft="10dp"
+                        android:textStyle="bold" />
+
+                    <!-- About button -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/mcvAbout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:cardCornerRadius="28dp"
+                        app:cardElevation="0dp"
+                        app:strokeWidth="1.3dp"
+                        app:strokeColor="#00FFFFFF"
+                        android:backgroundTint="#00020202">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical"
+                                android:padding="0dp"
+                                android:background="#00000000">
+
+                                <!-- Arrow icon on the right -->
+                                <com.google.android.material.button.MaterialButton
+                                    android:id="@+id/btnAbout"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:backgroundTint="#003D3D3D"
+                                    android:gravity="center_vertical|start"
+                                    android:padding="15dp"
+                                    android:text="About SafeBite"
+                                    android:textAlignment="viewStart"
+
+                                    android:textColor="@color/white"
+                                    app:icon="@drawable/about_icon"
+                                    app:iconGravity="textStart"
+                                    app:iconPadding="12dp"
+                                    app:iconSize="24dp"
+                                    app:iconTint="@null" />
+
+                                <ImageView
+                                    android:layout_width="24dp"
+                                    android:layout_height="24dp"
+                                    android:src="@drawable/right_arrow_icon"
+                                    android:contentDescription="Arrow"
+                                    android:layout_marginStart="12dp"/>
+
+                            </LinearLayout>
+
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- Terms and Conditions -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/mcvTermsAndConditions"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:cardCornerRadius="28dp"
+                        app:cardElevation="0dp"
+                        app:strokeWidth="1.3dp"
+                        app:strokeColor="#00FFFFFF"
+                        android:backgroundTint="#00020202">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical"
+                                android:padding="0dp"
+                                android:background="#00000000">
+
+                                <!-- Arrow icon on the right -->
+                                <com.google.android.material.button.MaterialButton
+                                    android:id="@+id/btnTermsAndConditions"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:backgroundTint="#003D3D3D"
+                                    android:gravity="center_vertical|start"
+                                    android:padding="15dp"
+                                    android:text="Terms and Conditions"
+                                    android:textAlignment="viewStart"
+
+                                    android:textColor="@color/white"
+                                    app:icon="@drawable/terms_and_conditions_icon"
+                                    app:iconGravity="textStart"
+                                    app:iconPadding="12dp"
+                                    app:iconSize="24dp"
+                                    app:iconTint="@null" />
+
+                                <ImageView
+                                    android:layout_width="24dp"
+                                    android:layout_height="24dp"
+                                    android:src="@drawable/right_arrow_icon"
+                                    android:contentDescription="Arrow"
+                                    android:layout_marginStart="12dp"/>
+
+                            </LinearLayout>
+
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- Visit us at SafeBite -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/mcvVisitWebsite"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:cardCornerRadius="28dp"
+                        app:cardElevation="0dp"
+                        app:strokeWidth="1.3dp"
+                        app:strokeColor="#00FFFFFF"
+                        android:backgroundTint="#00020202">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical"
+                                android:padding="0dp"
+                                android:background="#00000000">
+
+                                <!-- Arrow icon on the right -->
+                                <com.google.android.material.button.MaterialButton
+                                    android:id="@+id/btnVisitWebsite"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:backgroundTint="#003D3D3D"
+                                    android:gravity="center_vertical|start"
+                                    android:padding="15dp"
+                                    android:text="Visit our Website"
+                                    android:textAlignment="viewStart"
+
+                                    android:textColor="@color/white"
+                                    app:icon="@drawable/safebite_logo"
+                                    app:iconGravity="textStart"
+                                    app:iconPadding="12dp"
+                                    app:iconSize="24dp"
+                                    app:iconTint="@null" />
+
+                                <ImageView
+                                    android:layout_width="24dp"
+                                    android:layout_height="24dp"
+                                    android:src="@drawable/right_arrow_icon"
+                                    android:contentDescription="Arrow"
+                                    android:layout_marginStart="12dp"/>
+
+                            </LinearLayout>
+
+                    </com.google.android.material.card.MaterialCardView>
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnLogOut"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Logout"
+                    android:textColor="@color/white"
+                    android:layout_marginTop="10dp"
+                    android:padding="17dp"
+                    app:cornerRadius="16dp"
+                    app:icon="@drawable/logout_icon"
+                    app:iconTint="@null"
+                    app:iconGravity="textStart"
+                    app:iconPadding="12dp"
+                    android:backgroundTint="@color/red"/>
+
+
+        </LinearLayout>
+
+    </ScrollView>
+
 </FrameLayout>

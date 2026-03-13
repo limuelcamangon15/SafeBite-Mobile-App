@@ -9,10 +9,17 @@ public class User {
     private String email;
     private String password;
     private List<String> allergies;
-    private LocalDateTime registeredAt;
+    private long registeredAt;
 
     public User(){
-        this.registeredAt = LocalDateTime.now();
+        this.registeredAt = System.currentTimeMillis();
+    }
+
+    // constructor for registration
+    public User(String fullName, String email){
+        this.fullName = fullName;
+        this.email = email;
+        this.registeredAt = System.currentTimeMillis();
     }
 
     public String getFullName() {
@@ -47,11 +54,11 @@ public class User {
         this.allergies = allergies;
     }
 
-    public LocalDateTime getRegisteredAt(){
+    public long getRegisteredAt(){
         return registeredAt;
     }
 
-    public void setRegisteredAt(LocalDateTime registeredAt){
+    public void setRegisteredAt(long registeredAt){
         this.registeredAt = registeredAt;
     }
 }
