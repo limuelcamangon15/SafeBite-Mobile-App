@@ -26,6 +26,7 @@ import com.project.safebite.R;
 import com.project.safebite.constants.DatabaseConstants;
 import com.project.safebite.model.User;
 import com.project.safebite.ui.activity.LoginActivity;
+import com.project.safebite.ui.activity.TermsAndConditionsActivity;
 import com.project.safebite.ui.activity.WebViewActivity;
 import com.project.safebite.utils.UIUtil;
 
@@ -100,11 +101,11 @@ public class ProfileFragment extends Fragment {
         btnLogOut.setOnClickListener(v -> logOut());
 
         mcvAbout.setOnClickListener(v -> Log.d("wow", "About"));
-        mcvTermsAndConditions.setOnClickListener(v -> Log.d("wow", "Terms"));
+        mcvTermsAndConditions.setOnClickListener(v -> displayTermsAndConditions());
         mcvVisitWebsite.setOnClickListener(v -> displayWebsite());
 
         btnAbout.setOnClickListener(v -> Log.d("wow", "About"));
-        btnTermsAndConditions.setOnClickListener(v -> Log.d("wow", "Terms"));
+        btnTermsAndConditions.setOnClickListener(v -> displayTermsAndConditions());
         btnVisitWebsite.setOnClickListener(v -> displayWebsite());
     }
 
@@ -247,6 +248,11 @@ public class ProfileFragment extends Fragment {
 
     private void displayWebsite(){
         Intent intent = new Intent(requireActivity(), WebViewActivity.class);
+        startActivity(intent);
+    }
+
+    private void displayTermsAndConditions(){
+        Intent intent = new Intent(requireActivity(), TermsAndConditionsActivity.class);
         startActivity(intent);
     }
 }
