@@ -125,7 +125,7 @@
 
 
                     <!-- Eto nag ccause kung bakit walang preview yung xml file na to -->
-                    <androidx.camera.view.PreviewView
+                     <androidx.camera.view.PreviewView
                         android:id="@+id/pvScanner"
                         android:layout_width="match_parent"
                         android:layout_height="300dp"
@@ -289,6 +289,7 @@
                     </com.google.android.material.card.MaterialCardView>
 
                 </LinearLayout>
+
             </com.google.android.material.card.MaterialCardView>
         </ScrollView>
     </LinearLayout>

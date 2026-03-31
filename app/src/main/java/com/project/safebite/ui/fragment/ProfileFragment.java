@@ -26,6 +26,7 @@ import com.project.safebite.R;
 import com.project.safebite.constants.DatabaseConstants;
 import com.project.safebite.model.User;
 import com.project.safebite.ui.activity.LoginActivity;
+import com.project.safebite.ui.activity.WebViewActivity;
 import com.project.safebite.utils.UIUtil;
 
 import java.util.ArrayList;
@@ -100,11 +101,11 @@ public class ProfileFragment extends Fragment {
 
         mcvAbout.setOnClickListener(v -> Log.d("wow", "About"));
         mcvTermsAndConditions.setOnClickListener(v -> Log.d("wow", "Terms"));
-        mcvVisitWebsite.setOnClickListener(v -> Log.d("wow", "WEbsite"));
+        mcvVisitWebsite.setOnClickListener(v -> displayWebsite());
 
         btnAbout.setOnClickListener(v -> Log.d("wow", "About"));
         btnTermsAndConditions.setOnClickListener(v -> Log.d("wow", "Terms"));
-        btnVisitWebsite.setOnClickListener(v -> Log.d("wow", "WEbsite"));
+        btnVisitWebsite.setOnClickListener(v -> displayWebsite());
     }
 
     private void loadProfileData() {
@@ -242,5 +243,10 @@ public class ProfileFragment extends Fragment {
         cbFish.setChecked(allergies.contains("Fish"));
         cbShellfish.setChecked(allergies.contains("Shellfish"));
         cbSesame.setChecked(allergies.contains("Sesame"));
+    }
+
+    private void displayWebsite(){
+        Intent intent = new Intent(requireActivity(), WebViewActivity.class);
+        startActivity(intent);
     }
 }
