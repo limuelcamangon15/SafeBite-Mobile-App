@@ -25,6 +25,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.project.safebite.R;
 import com.project.safebite.constants.DatabaseConstants;
 import com.project.safebite.model.User;
+import com.project.safebite.ui.activity.AboutActivity;
 import com.project.safebite.ui.activity.LoginActivity;
 import com.project.safebite.ui.activity.TermsAndConditionsActivity;
 import com.project.safebite.ui.activity.WebViewActivity;
@@ -100,11 +101,11 @@ public class ProfileFragment extends Fragment {
         btnSave.setOnClickListener(v -> saveProfile());
         btnLogOut.setOnClickListener(v -> logOut());
 
-        mcvAbout.setOnClickListener(v -> Log.d("wow", "About"));
+        mcvAbout.setOnClickListener(v -> displayAbout());
         mcvTermsAndConditions.setOnClickListener(v -> displayTermsAndConditions());
         mcvVisitWebsite.setOnClickListener(v -> displayWebsite());
 
-        btnAbout.setOnClickListener(v -> Log.d("wow", "About"));
+        btnAbout.setOnClickListener(v -> displayAbout());
         btnTermsAndConditions.setOnClickListener(v -> displayTermsAndConditions());
         btnVisitWebsite.setOnClickListener(v -> displayWebsite());
     }
@@ -253,6 +254,11 @@ public class ProfileFragment extends Fragment {
 
     private void displayTermsAndConditions(){
         Intent intent = new Intent(requireActivity(), TermsAndConditionsActivity.class);
+        startActivity(intent);
+    }
+
+    private void displayAbout(){
+        Intent intent = new Intent(requireActivity(), AboutActivity.class);
         startActivity(intent);
     }
 }
