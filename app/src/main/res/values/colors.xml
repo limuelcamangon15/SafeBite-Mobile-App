@@ -6,5 +6,10 @@
     <color name="green">#BFBE1C</color>
     <color name="green_disabled">#747422</color>
     <color name="dark_green">#476209</color>
+    <color name="light_green">#8BC34A</color>
+    <color name="light_peach">#DDB99090</color>
     <color name="red">#C81111</color>
+    <color name="blue">#2196F3</color>
+    <color name="yellow">#FFEB3B</color>
+
 </resources>

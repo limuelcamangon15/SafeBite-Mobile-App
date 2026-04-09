@@ -1,6 +1,7 @@
 package com.project.safebite.model;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 public class User {
@@ -10,6 +11,8 @@ public class User {
     private String password;
     private List<String> allergies;
     private long registeredAt;
+    private ArrayList<Post> postHistory;
+    private ArrayList<Product> savedProduct;
 
     public User(){
         this.registeredAt = System.currentTimeMillis();

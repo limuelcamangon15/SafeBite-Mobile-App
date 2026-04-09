@@ -34,6 +34,13 @@ android {
 
 dependencies {
 
+    // Room core
+    implementation("androidx.room:room-runtime:2.6.1")
+    // Annotation processor (Java)
+    annotationProcessor ("androidx.room:room-compiler:2.6.1")
+    // Optional: LiveData / Flow support
+    implementation ("androidx.room:room-ktx:2.6.1")
+    implementation("androidx.security:security-crypto:1.1.0-alpha06")
     implementation("com.google.firebase:firebase-database:22.0.1")
     implementation("com.google.firebase:firebase-auth:24.0.1")
     implementation(platform("com.google.firebase:firebase-bom:34.10.0"))

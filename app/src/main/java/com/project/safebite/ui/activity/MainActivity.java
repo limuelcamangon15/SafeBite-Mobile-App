@@ -12,8 +12,10 @@ import androidx.fragment.app.Fragment;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.project.safebite.R;
+import com.project.safebite.ui.fragment.HistoryFragment;
 import com.project.safebite.ui.fragment.HomeFragment;
 import com.project.safebite.ui.fragment.ProfileFragment;
+import com.project.safebite.ui.fragment.SavedFragment;
 import com.project.safebite.ui.fragment.ScanFragment;
 
 public class MainActivity extends AppCompatActivity {
@@ -52,6 +54,12 @@ public class MainActivity extends AppCompatActivity {
                 }
                 else if (currentFragmentSelectedId == R.id.navigation_scan){
                     selectedFragment = new ScanFragment();
+                }
+                else if(currentFragmentSelectedId == R.id.navigation_history){
+                    selectedFragment = new HistoryFragment();
+                }
+                else if(currentFragmentSelectedId == R.id.navigation_saved){
+                    selectedFragment = new SavedFragment();
                 }
 
                 return loadFragment(selectedFragment);

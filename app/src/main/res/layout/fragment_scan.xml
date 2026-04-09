@@ -10,9 +10,8 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:orientation="vertical">
-
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -92,79 +91,86 @@
                 android:backgroundTint="@color/green"/>
         </LinearLayout>
 
-
-        <ScrollView
+        <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            >
 
-            <com.google.android.material.card.MaterialCardView
+
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="16dp"
-                app:cardCornerRadius="28dp"
-                app:cardElevation="0dp"
-                app:strokeWidth="1.3dp"
-                app:strokeColor="#20FFFFFF"
-                android:backgroundTint="#1AFFFFFF">
-
-                <LinearLayout
+                android:orientation="vertical"
+                >
+                <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical"
-                    android:padding="10dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Product Information"
-                        android:textStyle="bold"
-                        android:textSize="20sp"
-                        android:layout_gravity="center"
-                        android:textColor="@color/white"
-                        android:alpha="0.8"/>
-
-
-                    <!-- Eto nag ccause kung bakit walang preview yung xml file na to -->
-                     <androidx.camera.view.PreviewView
-                        android:id="@+id/pvScanner"
-                        android:layout_width="match_parent"
-                        android:layout_height="300dp"
-                        android:layout_margin="10dp"
-                        android:visibility="gone"/>
-
-                    <ImageView
-                        android:id="@+id/ivImage"
-                        android:layout_width="200dp"
-                        android:layout_height="200dp"
-                        android:scaleType="centerCrop"
-                        android:layout_gravity="center"
-                        android:background="@drawable/rounded_corner_transparent"
-                        android:layout_marginTop="10dp"
-                        android:layout_marginBottom="10dp"/>
+                    android:layout_height="wrap_content"
+                    android:layout_margin="16dp"
+                    app:cardCornerRadius="28dp"
+                    app:cardElevation="0dp"
+                    app:strokeWidth="1.3dp"
+                    app:strokeColor="#20FFFFFF"
+                    android:backgroundTint="#1AFFFFFF">
 
                     <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
+                        android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:layout_marginTop="12dp">
+                        android:padding="10dp">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Name"
-                            android:textSize="12sp"
-                            android:layout_marginBottom="2dp"
+                            android:text="Product Information"
+                            android:textStyle="bold"
+                            android:textSize="20sp"
                             android:layout_gravity="center"
-                            android:textColor="@color/white"/>
+                            android:textColor="@color/white"
+                            android:alpha="0.8"/>
 
-                        <com.google.android.material.card.MaterialCardView
+                        <!--when changing something here dont forget to temporarily comment this-->
+                         <androidx.camera.view.PreviewView
+                            android:id="@+id/pvScanner"
                             android:layout_width="match_parent"
-                            android:layout_height="40dp"
-                            app:cardCornerRadius="20dp"
-                            app:cardElevation="0dp"
-                            app:strokeWidth="1dp"
-                            app:strokeColor="#20FFFFFF"
-                            android:backgroundTint="#14928E8E">
+                            android:layout_height="300dp"
+                            android:layout_margin="10dp"
+                            android:visibility="gone"
+                             tools:visibility="gone"/>
+
+                        <ImageView
+                            android:id="@+id/ivImage"
+                            android:layout_width="200dp"
+                            android:layout_height="200dp"
+                            android:scaleType="centerCrop"
+                            android:layout_gravity="center"
+                            android:background="@drawable/rounded_corner_transparent"
+                            android:layout_marginTop="10dp"
+                            android:layout_marginBottom="10dp"/>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:layout_marginTop="12dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Name"
+                                android:textSize="12sp"
+                                android:layout_marginBottom="2dp"
+                                android:layout_gravity="center"
+                                android:textColor="@color/white"/>
+
+                            <com.google.android.material.card.MaterialCardView
+                                android:layout_width="match_parent"
+                                android:layout_height="40dp"
+                                app:cardCornerRadius="20dp"
+                                app:cardElevation="0dp"
+                                app:strokeWidth="1dp"
+                                app:strokeColor="#20FFFFFF"
+                                android:backgroundTint="#14928E8E">
 
                                 <TextView
                                     android:id="@+id/tvName"
@@ -175,122 +181,183 @@
                                     android:layout_gravity="center"
                                     android:textColor="@color/white"/>
 
-                        </com.google.android.material.card.MaterialCardView>
-                </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:orientation="vertical"
-                        android:layout_marginTop="12dp">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Brand"
-                            android:textSize="12sp"
-                            android:layout_marginBottom="2dp"
-                            android:layout_gravity="center"
-                            android:textColor="@color/white"/>
-
-                        <com.google.android.material.card.MaterialCardView
-                            android:layout_width="match_parent"
-                            android:layout_height="40dp"
-                            app:cardCornerRadius="20dp"
-                            app:cardElevation="0dp"
-                            app:strokeWidth="1dp"
-                            app:strokeColor="#20FFFFFF"
-                            android:backgroundTint="#14928E8E">
-
-                            <TextView
-                                android:id="@+id/tvBrand"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text=""
-                                android:textSize="16sp"
-                                android:layout_gravity="center"
-                                android:textColor="@color/white"/>
-
-                        </com.google.android.material.card.MaterialCardView>
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:orientation="vertical"
-                        android:layout_marginTop="12dp">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Allergen Ingredient/s"
-                            android:textSize="12sp"
-                            android:layout_marginBottom="2dp"
-                            android:layout_gravity="center"
-                            android:textColor="@color/white"/>
-
-                        <com.google.android.material.card.MaterialCardView
-                            android:layout_width="match_parent"
-                            android:layout_height="40dp"
-                            app:cardCornerRadius="20dp"
-                            app:cardElevation="0dp"
-                            app:strokeWidth="1dp"
-                            app:strokeColor="#20FFFFFF"
-                            android:backgroundTint="#14928E8E">
-
-                            <TextView
-                                android:id="@+id/tvAllergens"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text=""
-                                android:textSize="16sp"
-                                android:layout_gravity="center"
-                                android:textColor="@color/white"/>
-
-                        </com.google.android.material.card.MaterialCardView>
-                    </LinearLayout>
-
-                    <!-- Notice Box -->
-                    <com.google.android.material.card.MaterialCardView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        app:cardCornerRadius="20dp"
-                        app:cardElevation="0dp"
-                        app:strokeWidth="1dp"
-                        app:strokeColor="#20FFFFFF"
-                        android:backgroundTint="#14928E8E">
+                            </com.google.android.material.card.MaterialCardView>
+                        </LinearLayout>
 
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:gravity="center_vertical"
-                            android:orientation="horizontal"
-                            android:padding="16dp">
-
-                            <ImageView
-                                android:layout_width="20dp"
-                                android:layout_height="20dp"
-                                android:layout_marginEnd="12dp"
-                                android:alpha="0.8"
-                                android:src="@drawable/info_icon"
-                                app:tint="@color/white" />
+                            android:orientation="vertical"
+                            android:layout_marginTop="12dp">
 
                             <TextView
-                                android:layout_width="0dp"
+                                android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:alpha="0.9"
-                                android:text="Always verify allergen information on the product packaging."
-                                android:textColor="@color/white"
-                                android:textSize="14sp" />
+                                android:text="Brand"
+                                android:textSize="12sp"
+                                android:layout_marginBottom="2dp"
+                                android:layout_gravity="center"
+                                android:textColor="@color/white"/>
+
+                            <com.google.android.material.card.MaterialCardView
+                                android:layout_width="match_parent"
+                                android:layout_height="40dp"
+                                app:cardCornerRadius="20dp"
+                                app:cardElevation="0dp"
+                                app:strokeWidth="1dp"
+                                app:strokeColor="#20FFFFFF"
+                                android:backgroundTint="#14928E8E">
+
+                                <TextView
+                                    android:id="@+id/tvBrand"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text=""
+                                    android:textSize="16sp"
+                                    android:layout_gravity="center"
+                                    android:textColor="@color/white"/>
+
+                            </com.google.android.material.card.MaterialCardView>
                         </LinearLayout>
 
-                    </com.google.android.material.card.MaterialCardView>
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:layout_marginTop="12dp">
 
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Allergen Ingredient/s"
+                                android:textSize="12sp"
+                                android:layout_marginBottom="2dp"
+                                android:layout_gravity="center"
+                                android:textColor="@color/white"/>
+
+                            <com.google.android.material.card.MaterialCardView
+                                android:layout_width="match_parent"
+                                android:layout_height="40dp"
+                                app:cardCornerRadius="20dp"
+                                app:cardElevation="0dp"
+                                app:strokeWidth="1dp"
+                                app:strokeColor="#20FFFFFF"
+                                android:backgroundTint="#14928E8E">
+
+                                <TextView
+                                    android:id="@+id/tvAllergens"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text=""
+                                    android:textSize="16sp"
+                                    android:layout_gravity="center"
+                                    android:textColor="@color/white"/>
+
+                            </com.google.android.material.card.MaterialCardView>
+                        </LinearLayout>
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnPost"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Post This Scan?"
+                            android:textColor="@color/black"
+                            android:padding="12dp"
+                            app:cornerRadius="16dp"
+                            android:backgroundTint="@color/green"
+                            android:layout_marginTop="15dp"
+                            />
+
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            >
+
+                        <!-- Notice Box -->
+                        <com.google.android.material.card.MaterialCardView
+                            android:layout_width="0dp"
+                            android:layout_weight="7"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            app:cardCornerRadius="20dp"
+                            app:cardElevation="0dp"
+                            app:strokeWidth="1dp"
+                            app:strokeColor="#20FFFFFF"
+                            android:backgroundTint="#14928E8E">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal"
+                                android:padding="16dp">
+
+                                <ImageView
+                                    android:layout_width="20dp"
+                                    android:layout_height="20dp"
+                                    android:layout_marginEnd="12dp"
+                                    android:alpha="0.8"
+                                    android:src="@drawable/info_icon"
+                                    app:tint="@color/white" />
+
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:alpha="0.9"
+                                    android:text="Always verify allergen information on the product packaging."
+                                    android:textColor="@color/white"
+                                    android:textSize="14sp" />
+                            </LinearLayout>
+
+                            </com.google.android.material.card.MaterialCardView>
+
+                            <ImageButton
+                                android:id="@+id/ibBookmark"
+                                android:layout_marginTop="5dp"
+                                android:layout_weight="1"
+                                android:layout_width="0dp"
+                                android:layout_height="50dp"
+                                android:scaleType="centerInside"
+                                android:background="@drawable/bookmark_regular"
+                                android:padding="8dp"
+                                android:layout_gravity="center_vertical"
+                                android:visibility="gone"
+                                />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/white"
+                        android:text="Alternative Products"
+                        android:paddingLeft="18dp"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="10dp"
+                        />
                 </LinearLayout>
 
-            </com.google.android.material.card.MaterialCardView>
-        </ScrollView>
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvProduct"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="8dp"
+                    />
+
+            </LinearLayout>
+
+        </androidx.core.widget.NestedScrollView>
+
     </LinearLayout>
 </FrameLayout>
