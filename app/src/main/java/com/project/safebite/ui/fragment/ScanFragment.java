@@ -54,8 +54,11 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.mlkit.vision.barcode.BarcodeScanner;
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions;
 import com.google.mlkit.vision.barcode.BarcodeScanning;
@@ -315,17 +318,42 @@ public class ScanFragment extends Fragment {
 
     }
 
-    private void vibrate(List<String> userAllergens, List<String> productAllergens){
-        if(!allergens.isEmpty()){
-            Vibrator vibrator = (Vibrator) requireContext().getSystemService(Context.VIBRATOR_SERVICE);
+    private void checkAllergens( List<String> productAllergens){
+        String path = "users/" + uid + "/allergies";
+        DatabaseReference userRef = FirebaseDatabase.getInstance(DatabaseConstants.DATABASE_URL).getReference(path);
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                vibrator.vibrate(VibrationEffect.createOneShot(1500, VibrationEffect.DEFAULT_AMPLITUDE));
-            } else {
-                vibrator.vibrate(1500); // for older devices
+        List<String> userAllergies = new ArrayList<>();
+
+        userRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                userAllergies.clear();
+                for(DataSnapshot allergenData : snapshot.getChildren()){
+                    String allergen = allergenData.getValue(String.class);
+                    if(allergen!=null)userAllergies.add(allergen);
+                }
+
+                if(!productAllergens.isEmpty() && !userAllergies.isEmpty()){
+                    boolean allergenMatched = !Collections.disjoint(
+                            userAllergies.stream().map(String::toLowerCase).collect(java.util.stream.Collectors.toList()),
+                            productAllergens.stream().map(String::toLowerCase).collect(java.util.stream.Collectors.toList()));
+                    if(allergenMatched){
+                        Vibrator vibrator = (Vibrator) requireContext().getSystemService(Context.VIBRATOR_SERVICE);
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            vibrator.vibrate(VibrationEffect.createOneShot(1500, VibrationEffect.DEFAULT_AMPLITUDE));
+                        } else {
+                            vibrator.vibrate(1500); // for older devices
+                        }
+
+                    }
+                }
+
             }
-        }
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
 
+            }
+        });
     }
     String category = null;
 
@@ -405,7 +433,7 @@ public class ScanFragment extends Fragment {
                         nutriscoreGrade = nutriScoreGrade;
                         allergenList = allergies;
 
-                        //call vibrate here
+                        checkAllergens(allergenList);
                         recordScan(name, brand);
                         updateUI(image, productName, brands, allergies, etBarcode.getText().toString());
 
