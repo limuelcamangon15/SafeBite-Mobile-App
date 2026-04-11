@@ -47,7 +47,7 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
 
-        FirebaseDatabase.getInstance(DatabaseConstants.DATABASE_URL).setPersistenceEnabled(true);
+
 
         AuthStorage authStorage = new AuthStorage(context);
         if(authStorage.isLoggedIn()){

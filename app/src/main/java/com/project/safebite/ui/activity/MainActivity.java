@@ -20,7 +20,9 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.database.FirebaseDatabase;
 import com.project.safebite.R;
+import com.project.safebite.constants.DatabaseConstants;
 import com.project.safebite.model.NetworkViewModel;
 import com.project.safebite.ui.fragment.HistoryFragment;
 import com.project.safebite.ui.fragment.HomeFragment;

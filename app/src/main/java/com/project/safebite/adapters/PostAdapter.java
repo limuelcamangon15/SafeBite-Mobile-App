@@ -63,9 +63,11 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
 
         int colorRes = 0;
         int emojiIconRes = 0;
+        int textColorRes = R.color.black;
         switch (post.getPostFeeling()){
             case "Angry" :
                 colorRes = R.color.red;
+                textColorRes = R.color.white;
                 emojiIconRes = R.drawable.angryemoji;
                 break;
             case "Happy" :
@@ -88,6 +90,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
 
         holder.emojiTv.setTextColor(ContextCompat.getColor(context, colorRes));
         holder.postContentTv.setBackgroundTintList(ContextCompat.getColorStateList(context, colorRes));
+        holder.postContentTv.setTextColor(ContextCompat.getColorStateList(context, textColorRes));
         holder.postContentTv.setText(post.getPostContent());
         holder.allergensTv.setText(post.getAllergens());
         holder.brandTv.setText(post.getBrand());
@@ -212,7 +215,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
             brandTv = itemView.findViewById(R.id.brandTv);
             emojiTv = itemView.findViewById(R.id.emojiTv);
             foodTitleTv = itemView.findViewById(R.id.foodTitleTV);
-            allergensTv = itemView.findViewById(R.id.allergensTv);
+            allergensTv = itemView.findViewById(R.id.tvAllergens);
 
             foodImageIv = itemView.findViewById(R.id.foodImageIv);
             ivEmojiIcon = itemView.findViewById(R.id.ivEmojiIcon);

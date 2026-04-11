@@ -103,23 +103,49 @@
                         android:paddingBottom="10dp"/>
 
                     <!-- Allergens -->
-                    <TextView
-                        android:id="@+id/tvAllergens"
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:textColor="@color/white"
-                        android:textSize="20sp"
-                        android:lineSpacingExtra="4dp"
-                        android:alpha="0.9"
-                        android:text=""
-                        android:textStyle="bold"
-                        android:gravity="center"
-                        android:paddingBottom="10dp"/>
+                        android:orientation="vertical"
+                        android:layout_marginTop="12dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Allergen/s"
+                            android:textSize="12sp"
+                            android:layout_marginBottom="2dp"
+                            android:paddingLeft="10dp"
+                            android:layout_gravity="left"
+                            android:textColor="@color/white"/>
+
+                        <com.google.android.material.card.MaterialCardView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:minHeight="40dp"
+                            app:cardCornerRadius="16dp"
+                            app:cardElevation="0dp"
+                            app:strokeWidth="1dp"
+                            app:strokeColor="#20FFFFFF"
+                            android:backgroundTint="@color/gray2">
+
+                            <TextView
+                                android:id="@+id/tvAllergens"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text=""
+                                android:textSize="16sp"
+                                android:padding="10dp"
+                                android:layout_gravity="center"
+                                android:textColor="@color/white"/>
+
+                        </com.google.android.material.card.MaterialCardView>
+                    </LinearLayout>
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Share what you fill on this product:"
+                        android:text="Share what you feel on this product:"
                         android:textColor="@color/white"
                         android:paddingBottom="12dp"
                         />
@@ -330,7 +356,7 @@
             android:padding="12dp"
             app:cornerRadius="16dp"
             android:layout_marginBottom="10dp"
-            android:backgroundTint="@color/light_green"/>
+            android:backgroundTint="@color/green"/>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnCancel"
@@ -342,7 +368,7 @@
             android:padding="12dp"
             app:cornerRadius="16dp"
             android:layout_marginBottom="10dp"
-            android:backgroundTint="@color/white"/>
+            android:backgroundTint="@color/white2"/>
 
     </LinearLayout>
 
