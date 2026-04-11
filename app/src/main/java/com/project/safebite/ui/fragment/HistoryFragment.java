@@ -57,6 +57,10 @@ public class HistoryFragment extends Fragment {
     NetworkViewModel networkViewModel;
     boolean isWifiConnected;
     TextView tvNoHistory;
+    private ValueEventListener postListener;
+    private ValueEventListener scanListener;
+    private DatabaseReference postRef;
+    private DatabaseReference scanRef;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
@@ -104,22 +108,14 @@ public class HistoryFragment extends Fragment {
 
                 if(selected.equals("Posts")){
                     rvHistory.setVisibility(View.GONE);
-                    if(isWifiConnected || !postList.isEmpty()){
-                        rvPosts.setVisibility(View.VISIBLE);
-                        renderPosts(uid, view);
-                    }else{
-                        rvPosts.setVisibility(View.GONE);
-                        tvNoHistory.setVisibility(View.VISIBLE);
-                        tvNoHistory.setText("No posts to retrieve");
-                    }
-
-                }else{
+                    tvNoHistory.setVisibility(View.GONE);
+                    rvPosts.setVisibility(View.VISIBLE);
+                    renderPosts(uid, view);
+                } else {
                     rvPosts.setVisibility(View.GONE);
                     tvNoHistory.setVisibility(View.GONE);
                     rvHistory.setVisibility(View.VISIBLE);
                     renderScans(uid);
-
-
                 }
             }
 
@@ -141,13 +137,22 @@ public class HistoryFragment extends Fragment {
         }
     }
 
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (postListener != null && postRef != null) postRef.removeEventListener(postListener);
+        if (scanListener != null && scanRef != null) scanRef.removeEventListener(scanListener);
+    }
+
     private void renderPosts(String uid, View parent){
 
-
-
+        if (scanListener != null && scanRef != null) {
+            scanRef.removeEventListener(scanListener);
+            scanListener = null;
+        }
 
         String path = "users/" + uid + "/postList";
-        DatabaseReference historyRef = FirebaseDatabase.getInstance(DatabaseConstants.DATABASE_URL)
+         postRef = FirebaseDatabase.getInstance(DatabaseConstants.DATABASE_URL)
                 .getReference(path);
 
         postList = new ArrayList<>();
@@ -155,39 +160,57 @@ public class HistoryFragment extends Fragment {
         postAdapter = new PostAdapter(getContext(), postList, parent, "history");
         rvPosts.setAdapter(postAdapter);
 
-        historyRef.addValueEventListener(new ValueEventListener() {
+        postListener = new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 postList.clear();
-                for(DataSnapshot postSnapshot: snapshot.getChildren()){
-                        String postId = postSnapshot.getKey(); // get the postId
-                        Log.d("post", postId);
-                        FirebaseDatabase.getInstance(DatabaseConstants.DATABASE_URL)
-                                .getReference("posts/" + postId)
-                                .get()
-                                .addOnSuccessListener(postData -> {
-                                    Post post = postData.getValue(Post.class);
-                                    if (post != null) {
-                                        postList.add(post);
-                                        postList.sort(Comparator.comparingLong(Post::getPostedAt).reversed());
-                                        postAdapter.notifyDataSetChanged();
-                                    }
-                                });
+                int total = (int) snapshot.getChildrenCount();
+
+                if (total == 0 || !isWifiConnected) {
+                    rvPosts.setVisibility(View.GONE);
+                    tvNoHistory.setVisibility(View.VISIBLE);
+                    tvNoHistory.setText("No posts to retrieve");
+                    return;
                 }
 
+                final int[] loadedCount = {0};
+                for(DataSnapshot postSnapshot: snapshot.getChildren()){
+                    String postId = postSnapshot.getKey();
+                    Log.d("post", postId);
+                    FirebaseDatabase.getInstance(DatabaseConstants.DATABASE_URL)
+                            .getReference("posts/" + postId)
+                            .get()
+                            .addOnSuccessListener(postData -> {
+                                Post post = postData.getValue(Post.class);
+                                if (post != null) postList.add(post);
 
+                                loadedCount[0]++;
+                                if (loadedCount[0] == total) {
+                                    postList.sort(Comparator.comparingLong(Post::getPostedAt).reversed());
+                                    tvNoHistory.setVisibility(View.GONE);
+                                    rvPosts.setVisibility(View.VISIBLE);
+                                    postAdapter.notifyDataSetChanged();
+                                }
+                            });
+                }
             }
-
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 Log.e("RTDB", "Failed to retrieve post history", error.toException());
             }
-        });
+        };
+        postRef.addValueEventListener(postListener);
     }
 
     private void renderScans(String uid){
+
+        if (postListener != null && postRef != null) {
+            postRef.removeEventListener(postListener);
+            postListener = null;
+        }
+
         String path = "users/" + uid + "/scanHistory";
-        DatabaseReference historyRef = FirebaseDatabase.getInstance(DatabaseConstants.DATABASE_URL)
+        scanRef = FirebaseDatabase.getInstance(DatabaseConstants.DATABASE_URL)
                 .getReference(path);
 
         historyList = new ArrayList<>();
@@ -195,7 +218,7 @@ public class HistoryFragment extends Fragment {
         historyAdapter = new HistoryAdapter(getContext(), historyList);
         rvHistory.setAdapter(historyAdapter);
 
-        historyRef.addValueEventListener(new ValueEventListener() {
+        scanListener = new ValueEventListener(){
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 historyList.clear();
@@ -218,11 +241,13 @@ public class HistoryFragment extends Fragment {
                     historyAdapter.notifyDataSetChanged();
                 }
             }
-
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 Log.e("RTDB", "Failed to retrieve scan history", error.toException());
             }
-        });
+        };
+
+        scanRef.addValueEventListener(scanListener);
+
     }
 }
