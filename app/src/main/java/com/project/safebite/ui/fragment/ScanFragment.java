@@ -52,6 +52,7 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.bumptech.glide.Glide;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.firebase.Firebase;
@@ -114,6 +115,7 @@ public class ScanFragment extends Fragment {
     AuthStorage offlineAuth;
     NetworkViewModel networkViewModel;
     boolean isWifiConnected;
+    String category = null;
 
     public ScanFragment() {
         // Required empty public constructor
@@ -318,6 +320,10 @@ public class ScanFragment extends Fragment {
 
                 UIUtil.showSnackbar(parent, "All fields are required!");
 
+            }else if(!isWifiConnected){
+
+                UIUtil.showSnackbar(parent, "Posting not available in offline mode");
+
             }else{
 
                 Bundle bundle = new Bundle();
@@ -377,6 +383,13 @@ public class ScanFragment extends Fragment {
                 Vibrator vibrator = (Vibrator) requireContext().getSystemService(Context.VIBRATOR_SERVICE);
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     vibrator.vibrate(VibrationEffect.createOneShot(1500, VibrationEffect.DEFAULT_AMPLITUDE));
+                    new MaterialAlertDialogBuilder(context)
+                            .setTitle("Warning")
+                            .setMessage("This Product contains allergens that are harmful to you!")
+                            .setNegativeButton("Okay", null)
+                            .show();
+
+                    tvAllergens.setTextColor(ContextCompat.getColor(context, R.color.red));
                 } else {
                     vibrator.vibrate(1500); // for older devices
                 }
@@ -384,7 +397,7 @@ public class ScanFragment extends Fragment {
             }
         }
     }
-    String category = null;
+
 
     private void fetchProductFromApi(String barcode){
         RequestQueue r = Volley.newRequestQueue(context);
@@ -530,6 +543,7 @@ public class ScanFragment extends Fragment {
                     }
                 });
 
+        Log.d("Scan", "fetchfromapi");
         r.add(jsonObjectRequest);
     }
 
@@ -543,8 +557,7 @@ public class ScanFragment extends Fragment {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.exists()) {
-                    for (DataSnapshot child : snapshot.getChildren()) {
-                        Product product = child.getValue(Product.class);
+                        Product product = snapshot.getValue(Product.class);
                         if (product != null) {
                             name = product.getName();
                             brand = product.getBrand();
@@ -555,18 +568,19 @@ public class ScanFragment extends Fragment {
                             category = product.getCategory();
                             updateUI(imageUrl, name, brand, allergenList, barcode, nutrimentAnalysis);
                             checkAllergens(allergenList, userAllergies);
-
+                            recordScan(name, brand);
+                            Log.d("Scan", "fetchfromoffline");
                             if(isWifiConnected){
-                                if(category!=null && nutriscoreGrade != null || !nutriscoreGrade.isEmpty()){
+                                if(category != null && nutriscoreGrade != null && !nutriscoreGrade.isEmpty()){
                                     Log.d("CATEGORY", category);
                                     if(!recommendations.isEmpty()){
                                         recommendations.clear();
                                     }
                                     fetchAlternatives(category, nutriscoreGrade, allergenList);
+                                    Log.d("Scan", "fetchfromonline");
                                 }
                             }
                         }
-                    }
                 }
                 else{
                     if(isWifiConnected){
@@ -605,6 +619,7 @@ public class ScanFragment extends Fragment {
          );
 
          userRef.child(scanId).setValue(product);
+         userRef.keepSynced(true);
     }
 
 
@@ -640,6 +655,8 @@ public class ScanFragment extends Fragment {
             UIUtil.showSnackbar(parent, "Product Unsaved!");
             ibBookmark.setBackgroundResource(R.drawable.bookmark_regular);
         }
+
+        userRef.keepSynced(true);
 
     }
 
@@ -772,7 +789,7 @@ public class ScanFragment extends Fragment {
         rvProduct.setHasFixedSize(true);
         rvProduct.setNestedScrollingEnabled(false);
 
-        rpAdapter = new RecommendedProductAdapter(parent, context, recommendations);
+        rpAdapter = new RecommendedProductAdapter(parent, context, recommendations, userAllergies);
         rvProduct.setAdapter(rpAdapter);
 
     }

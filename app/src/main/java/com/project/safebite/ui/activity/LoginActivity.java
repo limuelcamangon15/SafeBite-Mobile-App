@@ -120,7 +120,7 @@ public class LoginActivity extends AppCompatActivity {
         auth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(task -> {
                     if(task.isSuccessful()){
-                        UIUtil.hideLoading(context, btnLogIn, pbLogIn, "Log In");
+
 
                         FirebaseUser userLogged = task.getResult().getUser();
                         String uid = userLogged.getUid();
@@ -135,6 +135,7 @@ public class LoginActivity extends AppCompatActivity {
                                 //short delay
                                 new Handler(Looper.getMainLooper()).postDelayed(() -> {
                                     Intent mainIntent = new Intent(context, MainActivity.class);
+                                    UIUtil.hideLoading(context, btnLogIn, pbLogIn, "Log In");
                                     mainIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                                     startActivity(mainIntent);
                                     finish();

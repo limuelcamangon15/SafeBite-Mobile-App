@@ -45,7 +45,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.HistoryV
         holder.tvBarcode.setText(product.getBarcode());
 
         SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy | hh:mm a", Locale.getDefault());
-        String timestamp = sdf.format(new Date(product.getScannedAt()));
+        String timestamp = sdf.format(new Date(product.getTimestamp()));
         holder.tvTimestamp.setText(timestamp);
 
     }

@@ -207,6 +207,7 @@ public class ProfileFragment extends Fragment {
         if(!fullName.trim().equals("")) {
             // ref/fullName
             ref.child("fullName").setValue(fullName);
+            ref.child("fullName").keepSynced(true);
         }
 
         // ref/allergies
@@ -217,7 +218,7 @@ public class ProfileFragment extends Fragment {
                 .addOnFailureListener(e -> {
                     UIUtil.showSnackbar(requireView(), "Failed to save changes.");
                 });
-
+        ref.child("allergies").keepSynced(true);
 
         // Disable editing after save
         etFullName.setEnabled(false);
@@ -229,17 +230,18 @@ public class ProfileFragment extends Fragment {
 
     private void logOut(){
         new MaterialAlertDialogBuilder(requireContext())
-                .setTitle("Delete Item")
+                .setTitle("Log Out")
                 .setMessage("Are you sure you want to Log Out?")
                 .setPositiveButton("Log Out", (dialog, which) -> {
 
-                    Intent intent = new Intent(requireActivity(), LoginActivity.class);
                     new AuthStorage(requireContext()).clearUser();
                     auth.signOut();
 
+                    Intent intent = new Intent(requireActivity(), LoginActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                    startActivity(intent);
                     requireActivity().finish();
+                    startActivity(intent);
+
 
                 })
                 .setNegativeButton("Cancel", null)

@@ -8,9 +8,11 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -24,6 +26,7 @@ import com.project.safebite.R;
 import com.project.safebite.adapters.HistoryAdapter;
 import com.project.safebite.adapters.PostAdapter;
 import com.project.safebite.constants.DatabaseConstants;
+import com.project.safebite.model.NetworkViewModel;
 import com.project.safebite.model.Post;
 import com.project.safebite.model.Product;
 
@@ -48,15 +51,26 @@ public class HistoryFragment extends Fragment {
     private List<Product> historyList;
     private List<Post> postList;
     FirebaseAuth auth;
+    Spinner spinner;
+    String uid = "";
+
+    NetworkViewModel networkViewModel;
+    boolean isWifiConnected;
+    TextView tvNoHistory;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
 
         View view = inflater.inflate(R.layout.fragment_history, container, false);
+        networkViewModel = new ViewModelProvider(requireActivity()).get(NetworkViewModel.class);
+
+        postList = new ArrayList<>();
+        historyList = new ArrayList<>();
 
         rvHistory = view.findViewById(R.id.rvHistory);
         rvPosts = view.findViewById(R.id.rvPosts);
-        Spinner spinner = view.findViewById(R.id.spFilter);
+        spinner = view.findViewById(R.id.spFilter);
+        tvNoHistory = view.findViewById(R.id.tvNoHistory);
 
         auth = FirebaseAuth.getInstance();
 
@@ -65,8 +79,7 @@ public class HistoryFragment extends Fragment {
         rvPosts.setLayoutManager(new LinearLayoutManager(getContext()));
         rvPosts.setHasFixedSize(true);
 
-
-        String uid = auth.getCurrentUser().getUid();
+       uid = auth.getCurrentUser().getUid();
 
         List<String> items = new ArrayList<>();
         items.add("Posts");
@@ -79,8 +92,10 @@ public class HistoryFragment extends Fragment {
         );
         spAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(spAdapter);
-        spinner.setSelection(1);
-        renderScans(uid);
+
+        networkViewModel.getIsConnected().observe(getViewLifecycleOwner(), isConnected->{
+            isWifiConnected = isConnected;
+        });
 
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -89,12 +104,22 @@ public class HistoryFragment extends Fragment {
 
                 if(selected.equals("Posts")){
                     rvHistory.setVisibility(View.GONE);
-                    rvPosts.setVisibility(View.VISIBLE);
-                    renderPosts(uid, view);
+                    if(isWifiConnected || !postList.isEmpty()){
+                        rvPosts.setVisibility(View.VISIBLE);
+                        renderPosts(uid, view);
+                    }else{
+                        rvPosts.setVisibility(View.GONE);
+                        tvNoHistory.setVisibility(View.VISIBLE);
+                        tvNoHistory.setText("No posts to retrieve");
+                    }
+
                 }else{
                     rvPosts.setVisibility(View.GONE);
+                    tvNoHistory.setVisibility(View.GONE);
                     rvHistory.setVisibility(View.VISIBLE);
                     renderScans(uid);
+
+
                 }
             }
 
@@ -104,11 +129,23 @@ public class HistoryFragment extends Fragment {
             }
         });
 
+        spinner.setSelection(1);
         return view;
     }
-
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (spinner.getSelectedItem().toString().equals("Posts")) {
+            postList.clear();
+            renderPosts(uid, rvPosts);
+        }
+    }
 
     private void renderPosts(String uid, View parent){
+
+
+
+
         String path = "users/" + uid + "/postList";
         DatabaseReference historyRef = FirebaseDatabase.getInstance(DatabaseConstants.DATABASE_URL)
                 .getReference(path);
@@ -124,7 +161,7 @@ public class HistoryFragment extends Fragment {
                 postList.clear();
                 for(DataSnapshot postSnapshot: snapshot.getChildren()){
                         String postId = postSnapshot.getKey(); // get the postId
-
+                        Log.d("post", postId);
                         FirebaseDatabase.getInstance(DatabaseConstants.DATABASE_URL)
                                 .getReference("posts/" + postId)
                                 .get()
@@ -167,8 +204,19 @@ public class HistoryFragment extends Fragment {
                     if(product!=null)historyList.add(product);
                 }
 
-                historyList.sort(Comparator.comparingLong(Product::getScannedAt).reversed());
-                historyAdapter.notifyDataSetChanged();
+                if (historyList.isEmpty()) {
+                    rvHistory.setVisibility(View.GONE);
+                    tvNoHistory.setVisibility(View.VISIBLE);
+                    tvNoHistory.setText("No scans to retrieve");
+                } else {
+                    tvNoHistory.setVisibility(View.GONE);
+                    rvHistory.setVisibility(View.VISIBLE);
+                    historyList.sort(Comparator.comparingLong(Product::getTimestamp).reversed());
+                    if (historyList.size() > 15) {
+                        historyList = historyList.subList(0, 15);
+                    }
+                    historyAdapter.notifyDataSetChanged();
+                }
             }
 
             @Override

@@ -142,65 +142,7 @@
 
                 </FrameLayout>
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center"
-                    android:layout_marginTop="20dp">
 
-                    <View
-                        android:layout_width="100dp"
-                        android:layout_height="1dp"
-                        android:background="@color/gray" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="or"
-                        android:textColor="@color/gray"
-                        android:paddingStart="8dp"
-                        android:paddingEnd="8dp"
-                        android:textSize="14sp"
-                        android:textStyle="bold"/>
-
-                    <View
-                        android:layout_width="100dp"
-                        android:layout_height="1dp"
-                        android:background="@color/gray" />
-
-                </LinearLayout>
-
-                <FrameLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="20dp">
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnGoogleLogIn"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="Continue with Google"
-                        android:textColor="@color/black"
-                        android:padding="15dp"
-                        app:cornerRadius="16dp"
-                        app:iconTint="@null"
-                        app:icon="@drawable/google_logo"
-                        app:iconGravity="textStart"
-                        app:iconPadding="12dp"
-                        app:iconSize="24dp"
-                        android:backgroundTint="@color/white"/>
-
-                    <ProgressBar
-                        android:id="@+id/pbGoogleLogIn"
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:layout_gravity="center"
-                        android:visibility="gone"
-                        android:backgroundTint="@color/white"
-                        android:indeterminate="true"/>
-
-                </FrameLayout>
 
             </LinearLayout>
 

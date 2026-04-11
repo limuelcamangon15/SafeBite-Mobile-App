@@ -10,18 +10,17 @@ public class Product {
     List<String> allergens;
     String score;
     String barcode;
-    long scannedAt;
     long timestamp;
     private String nutrimentsAnalysis;
     private String category;
 
     public Product(){};
 
-    public Product(String name, String brand, String barcode, long scannedAt){
+    public Product(String name, String brand, String barcode, long timestamp){
         this.name = name;
         this.brand = brand;
         this.barcode = barcode;
-        this.scannedAt = scannedAt;
+        this.timestamp = timestamp;
     }
 
     public Product(
@@ -86,13 +85,7 @@ public class Product {
         return score;
     }
 
-    public long getScannedAt() {
-        return scannedAt;
-    }
 
-    public void setScannedAt(long scannedAt) {
-        this.scannedAt = scannedAt;
-    }
 
     public String getBarcode() {
         return barcode;

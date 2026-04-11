@@ -128,7 +128,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
                 popupMenu.setOnMenuItemClickListener(item -> {
                     int id = item.getItemId();
                     if (id == R.id.action_edit) {
-
+                        Log.d("debug", post.getPostId());
                         Bundle bundle = new Bundle();
                         bundle.putString("username", post.getUsername());
                         bundle.putString("postId", post.getPostId());

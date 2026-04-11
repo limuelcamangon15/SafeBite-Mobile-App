@@ -22,6 +22,7 @@ import com.project.safebite.model.Post;
 import com.project.safebite.model.Product;
 import com.project.safebite.utils.UIUtil;
 
+import java.util.Collections;
 import java.util.List;
 
 public class RecommendedProductAdapter extends RecyclerView.Adapter<RecommendedProductAdapter.RecommendedViewHolder>{
@@ -32,12 +33,14 @@ public class RecommendedProductAdapter extends RecyclerView.Adapter<RecommendedP
     private FirebaseAuth auth;
     private View parent;
     String uid = null;
-    public RecommendedProductAdapter(View parent, Context context, List<Product> productList){
+    List<String> userAllergen;
+    public RecommendedProductAdapter(View parent, Context context, List<Product> productList, List<String> userAllergen){
         this.productList = productList;
         this.context = context;
         this.parent = parent;
         auth = FirebaseAuth.getInstance();
         uid = auth.getCurrentUser().getUid();
+        this.userAllergen = userAllergen;
     }
 
     @NonNull
@@ -70,6 +73,7 @@ public class RecommendedProductAdapter extends RecyclerView.Adapter<RecommendedP
         holder.tvName.setText(product.getName());
         holder.tvBrand.setText(product.getBrand());
         holder.tvAllergens.setText(android.text.TextUtils.join("\n", product.getAllergens()));
+        holder.tvNutrimentAnalysis.setText(product.getNutrimentsAnalysis());
         holder.ibBookmark.setVisibility(View.VISIBLE);
         holder.ibBookmark.setOnClickListener(v->saveProduct(product, holder.ibBookmark));
 
@@ -83,7 +87,11 @@ public class RecommendedProductAdapter extends RecyclerView.Adapter<RecommendedP
             }
         });
 
+        checkAllergens(product.getAllergens(), userAllergen, holder.tvAllergens);
+
     }
+
+
 
     @Override
     public int getItemCount() {
@@ -101,7 +109,7 @@ public class RecommendedProductAdapter extends RecyclerView.Adapter<RecommendedP
         if(isProductSaved){
 ;
             userRef.child(barcode).setValue(savedProduct);
-            UIUtil.showSnackbar(parent, "Saved Product!");
+            UIUtil.showSnackbar(parent, "Product Saved!");
             ibBookmark.setBackgroundResource(R.drawable.bookmark_solid);
         }
         else{
@@ -110,11 +118,25 @@ public class RecommendedProductAdapter extends RecyclerView.Adapter<RecommendedP
             ibBookmark.setBackgroundResource(R.drawable.bookmark_regular);
         }
 
+        userRef.keepSynced(true);
+
+    }
+
+    private void checkAllergens(List<String> productAllergens, List<String> userAllergies, TextView tvAllergens){
+        if(!productAllergens.isEmpty() && !userAllergies.isEmpty()){
+            boolean allergenMatched = !Collections.disjoint(
+                    userAllergies.stream().map(String::toLowerCase).collect(java.util.stream.Collectors.toList()),
+                    productAllergens.stream().map(String::toLowerCase).collect(java.util.stream.Collectors.toList()));
+            if(allergenMatched){
+                tvAllergens.setTextColor(ContextCompat.getColor(context, R.color.red));
+            }
+
+        }
     }
 
     public static class RecommendedViewHolder extends RecyclerView.ViewHolder{
 
-        TextView tvAllergens, tvBrand, tvName;
+        TextView tvAllergens, tvBrand, tvName, tvNutrimentAnalysis;
         ImageView ivImage;
         ImageButton ibBookmark;
 
@@ -123,6 +145,7 @@ public class RecommendedProductAdapter extends RecyclerView.Adapter<RecommendedP
             tvAllergens = foodView.findViewById(R.id.tvAllergens);
             tvBrand = foodView.findViewById(R.id.tvBrand);
             tvName = foodView.findViewById(R.id.tvName);
+            tvNutrimentAnalysis = foodView.findViewById(R.id.tvNutrimentsAnalysis);
             ivImage = foodView.findViewById(R.id.ivImage);
             ibBookmark = foodView.findViewById(R.id.ibBookmark);
         }

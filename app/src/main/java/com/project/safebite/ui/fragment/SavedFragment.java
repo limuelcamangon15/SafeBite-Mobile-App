@@ -59,16 +59,12 @@
             adapter = new SavedAdapter(view, getContext(), savedProductList, auth);
             rvSaved.setAdapter(adapter);
 
-            if(savedProductList.isEmpty()){
-                rvSaved.setVisibility(View.GONE);
-            }
-
             String uid = auth.getCurrentUser().getUid();
             String path = "users/" + uid + "/savedProducts";
-            DatabaseReference historyRef = FirebaseDatabase.getInstance(DatabaseConstants.DATABASE_URL)
+            DatabaseReference saveRef = FirebaseDatabase.getInstance(DatabaseConstants.DATABASE_URL)
                     .getReference(path);
 
-            historyRef.addValueEventListener(new ValueEventListener() {
+            saveRef.addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
                     savedProductList.clear();
@@ -79,6 +75,12 @@
 
                     Collections.reverse(savedProductList);
                     adapter.notifyDataSetChanged();
+
+                    if(savedProductList.isEmpty()){
+                        rvSaved.setVisibility(View.GONE);
+                    } else {
+                        rvSaved.setVisibility(View.VISIBLE);
+                    }
                 }
 
                 @Override
