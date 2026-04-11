@@ -5,6 +5,7 @@
     import android.view.LayoutInflater;
     import android.view.View;
     import android.view.ViewGroup;
+    import android.widget.TextView;
 
     import androidx.annotation.NonNull;
     import androidx.fragment.app.Fragment;
@@ -42,6 +43,7 @@
         private SavedAdapter adapter;
 
         private List<Product> savedProductList;
+        TextView tvNoSaved;
         FirebaseAuth auth;
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
@@ -49,6 +51,7 @@
             View view = inflater.inflate(R.layout.fragment_saved_products, container, false);
 
             rvSaved = view.findViewById(R.id.rvSaved);
+            tvNoSaved = view.findViewById(R.id.tvNoSaved);
             auth = FirebaseAuth.getInstance();
 
             rvSaved.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -78,8 +81,12 @@
 
                     if(savedProductList.isEmpty()){
                         rvSaved.setVisibility(View.GONE);
+                        tvNoSaved.setVisibility(View.VISIBLE);
+                        tvNoSaved.setText("No Saved Products");
                     } else {
+                        tvNoSaved.setVisibility(View.GONE);
                         rvSaved.setVisibility(View.VISIBLE);
+
                     }
                 }
 
