@@ -20,6 +20,7 @@ import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.camera.view.PreviewView;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -53,6 +54,7 @@ import com.bumptech.glide.Glide;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.firebase.Firebase;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -67,9 +69,12 @@ import com.google.mlkit.vision.common.InputImage;
 import com.project.safebite.R;
 import com.project.safebite.adapters.RecommendedProductAdapter;
 import com.project.safebite.constants.DatabaseConstants;
+import com.project.safebite.model.NetworkViewModel;
 import com.project.safebite.model.Product;
+import com.project.safebite.offlineAuth.AuthStorage;
 import com.project.safebite.ui.activity.AboutActivity;
 import com.project.safebite.ui.activity.PostFormActivity;
+import com.project.safebite.utils.FuncUtil;
 import com.project.safebite.utils.UIUtil;
 
 import org.json.JSONArray;
@@ -78,6 +83,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -89,7 +95,7 @@ public class ScanFragment extends Fragment {
     View parent;
     MaterialButton btnScan, btnPost;
     TextInputEditText etBarcode;
-    TextView tvName, tvBrand, tvAllergens;
+    TextView tvName, tvBrand, tvAllergens, tvNutrimentsAnalysis, tvAltProducts;
     ImageView ivImage ;
     ImageButton ibBookmark;
     PreviewView pvScanner;
@@ -102,9 +108,12 @@ public class ScanFragment extends Fragment {
     private List<Product> recommendations = new ArrayList<>();
     private boolean isProductSaved = false;
     private String uid = null;
-    String name="", brand="", allergens="", imageUrl="", nutriscoreGrade = "";
+    String name="", brand="", nutrimentAnalysis="", imageUrl="", nutriscoreGrade = "";
     List <String> allergenList = null;
-
+    List<String> userAllergies = new ArrayList<>();
+    AuthStorage offlineAuth;
+    NetworkViewModel networkViewModel;
+    boolean isWifiConnected;
 
     public ScanFragment() {
         // Required empty public constructor
@@ -122,6 +131,7 @@ public class ScanFragment extends Fragment {
        View view = inflater.inflate(R.layout.fragment_scan, container, false);
         parent = view;
 
+        networkViewModel = new ViewModelProvider(requireActivity()).get(NetworkViewModel.class);
         initializeViews(view);
 
         return view;
@@ -236,6 +246,7 @@ public class ScanFragment extends Fragment {
 
     private void initializeViews(View view){
         context = requireContext();
+        offlineAuth = new AuthStorage(context);
         auth = FirebaseAuth.getInstance();
         rvProduct = view.findViewById(R.id.rvProduct);
         btnScan = view.findViewById(R.id.btnScan);
@@ -243,21 +254,51 @@ public class ScanFragment extends Fragment {
         tvName = view.findViewById(R.id.tvName);
         tvBrand = view.findViewById(R.id.tvBrand);
         tvAllergens = view.findViewById(R.id.tvAllergens);
+        tvNutrimentsAnalysis = view.findViewById(R.id.tvNutrimentsAnalysis);
+        tvAltProducts = view.findViewById(R.id.tvAltProducts);
         ivImage = view.findViewById(R.id.ivImage);
         ibBookmark  = view.findViewById(R.id.ibBookmark);
         pvScanner = view.findViewById(R.id.pvScanner);
         btnPost = view.findViewById(R.id.btnPost);
-        uid = auth.getCurrentUser().getUid();
+
+        if (FuncUtil.isConnected(context)) {
+            uid = auth.getCurrentUser() != null ? auth.getCurrentUser().getUid() : offlineAuth.getUserId();
+        } else {
+            uid = offlineAuth.getUserId();
+        }
+
+        networkViewModel.getIsConnected().observe(getViewLifecycleOwner(), isConnected -> {
+            uid = isConnected && auth.getCurrentUser() != null
+                    ? auth.getCurrentUser().getUid()
+                    : offlineAuth.getUserId();
+            isWifiConnected = isConnected;
+        });
+
 
         initializeBarcodeScanner();
 
+        String path = "users/" + uid + "/allergies";
+        DatabaseReference userRef = FirebaseDatabase.getInstance(DatabaseConstants.DATABASE_URL).getReference(path);
+        userRef.keepSynced(true);
+        userRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                userAllergies.clear();
+                for(DataSnapshot allergenData : snapshot.getChildren()){
+                    String allergen = allergenData.getValue(String.class);
+                    if(allergen!=null)userAllergies.add(allergen);
+                }
+            }
 
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
 
         btnScan.setOnClickListener(v -> askCameraPermission());
         btnPost.setOnClickListener(v -> openPostForm());
         ibBookmark.setOnClickListener(v -> saveScan());
-
-
 
         etBarcode.setOnEditorActionListener((v, actionId, event) -> {
             if(actionId == EditorInfo.IME_ACTION_SEARCH ||
@@ -273,7 +314,7 @@ public class ScanFragment extends Fragment {
 
     private void openPostForm(){
 
-            if(name.isEmpty() || brand.isEmpty() || allergens.isEmpty() || imageUrl.isEmpty()){
+            if(name.isEmpty() || brand.isEmpty() || allergenList.isEmpty() || imageUrl.isEmpty()){
 
                 UIUtil.showSnackbar(parent, "All fields are required!");
 
@@ -283,8 +324,9 @@ public class ScanFragment extends Fragment {
 
                 bundle.putString("name",name);
                 bundle.putString("brand",brand);
-                bundle.putString("allergens",allergens);
+                bundle.putString("allergens",android.text.TextUtils.join("\n", allergenList));
                 bundle.putString("imageUrl",imageUrl);
+                bundle.putString("source", "scan");
 
                 Intent intent = new Intent(requireActivity(), PostFormActivity.class);
                 intent.putExtras(bundle);
@@ -294,14 +336,18 @@ public class ScanFragment extends Fragment {
 
     }
 
-    private void updateUI(String imageUrl, String name, String brand, List<String> allergens, String barcode){
+    private void updateUI(String imageUrl, String name, String brand, List<String> allergens, String barcode, String nutrimentAnalysis){
         Glide.with(parent)
                 .load(imageUrl)
+                .placeholder(R.drawable.placeholder)
+                .error(R.drawable.placeholder)
+                .override(300,300)
                 .into(ivImage);
 
         tvName.setText(name);
         tvBrand.setText(brand);
         tvAllergens.setText(android.text.TextUtils.join("\n", allergens));
+        tvNutrimentsAnalysis.setText(nutrimentAnalysis);
         ibBookmark.setVisibility(View.VISIBLE);
 
         String path = "users/" + uid + "/savedProducts";
@@ -316,49 +362,31 @@ public class ScanFragment extends Fragment {
             }
         });
 
+        if(!isWifiConnected){
+            tvAltProducts.setVisibility(View.GONE);
+            rvProduct.setVisibility(View.GONE);
+        }
     }
 
-    private void checkAllergens( List<String> productAllergens){
-        String path = "users/" + uid + "/allergies";
-        DatabaseReference userRef = FirebaseDatabase.getInstance(DatabaseConstants.DATABASE_URL).getReference(path);
-
-        List<String> userAllergies = new ArrayList<>();
-
-        userRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                userAllergies.clear();
-                for(DataSnapshot allergenData : snapshot.getChildren()){
-                    String allergen = allergenData.getValue(String.class);
-                    if(allergen!=null)userAllergies.add(allergen);
-                }
-
-                if(!productAllergens.isEmpty() && !userAllergies.isEmpty()){
-                    boolean allergenMatched = !Collections.disjoint(
-                            userAllergies.stream().map(String::toLowerCase).collect(java.util.stream.Collectors.toList()),
-                            productAllergens.stream().map(String::toLowerCase).collect(java.util.stream.Collectors.toList()));
-                    if(allergenMatched){
-                        Vibrator vibrator = (Vibrator) requireContext().getSystemService(Context.VIBRATOR_SERVICE);
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                            vibrator.vibrate(VibrationEffect.createOneShot(1500, VibrationEffect.DEFAULT_AMPLITUDE));
-                        } else {
-                            vibrator.vibrate(1500); // for older devices
-                        }
-
-                    }
+    private void checkAllergens(List<String> productAllergens, List<String> userAllergies){
+        if(!productAllergens.isEmpty() && !userAllergies.isEmpty()){
+            boolean allergenMatched = !Collections.disjoint(
+                    userAllergies.stream().map(String::toLowerCase).collect(java.util.stream.Collectors.toList()),
+                    productAllergens.stream().map(String::toLowerCase).collect(java.util.stream.Collectors.toList()));
+            if(allergenMatched){
+                Vibrator vibrator = (Vibrator) requireContext().getSystemService(Context.VIBRATOR_SERVICE);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    vibrator.vibrate(VibrationEffect.createOneShot(1500, VibrationEffect.DEFAULT_AMPLITUDE));
+                } else {
+                    vibrator.vibrate(1500); // for older devices
                 }
 
             }
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
-        });
+        }
     }
     String category = null;
 
-    private void searchProduct(String barcode) {
-
+    private void fetchProductFromApi(String barcode){
         RequestQueue r = Volley.newRequestQueue(context);
 
         String url = "https://world.openfoodfacts.org/api/v2/product/"+barcode+"?fields=product_name,brands,image_url,ingredients_text,allergens_tags,nutriscore_grade,categories_tags,nutriments";
@@ -386,6 +414,9 @@ public class ScanFragment extends Fragment {
                         String productName = product.optString("product_name", "Name is not available");
                         String brands = product.optString("brands", "Brand is not available");
                         String nutriScoreGrade = product.optString("nutriscore_grade", "Nutriscore not available");
+                        String nutritionDataPer = product.optString("nutrition_data_per", "nutrition data not available");
+                        JSONObject nutrimentsObj = product.optJSONObject("nutriments");
+                        JSONObject nutrimentsEstimatedObj = product.optJSONObject("nutriments_estimated");
                         JSONArray allergenArray = product.optJSONArray("allergens_tags");
                         JSONArray categoriesArray = product.optJSONArray("categories_tags");
 
@@ -397,6 +428,12 @@ public class ScanFragment extends Fragment {
                                 allergies.add(item);
                             }
                         }
+
+                        if(allergies.isEmpty()){
+                            allergies.add("No Allergens Listed");
+                        }
+
+
 
                         List<String> categories = new ArrayList<>();
 
@@ -416,30 +453,56 @@ public class ScanFragment extends Fragment {
                             }
                         }
 
+                        String nutrimentsValue = "";
+                        if (nutrimentsObj != null) {
+                            StringBuilder sb = new StringBuilder();
+                            sb.append("nutriments:");
+                            Iterator<String> keys = nutrimentsObj.keys();
+                            while (keys.hasNext()) {
+                                String key = keys.next();
+                                if (!key.endsWith("_100g") && !key.endsWith("_unit") && !key.endsWith("_value") && !key.endsWith("_modifier") && !key.endsWith("_serving")) {
+                                    sb.append(key).append(": ").append(nutrimentsObj.opt(key)).append(", ");
+                                }
+                            }
+                            nutrimentsValue += sb.toString();
+                        }
+
+                        if (nutrimentsEstimatedObj != null) {
+                            StringBuilder sb = new StringBuilder();
+                            sb.append("\nestimated nutriments:");
+                            Iterator<String> keys = nutrimentsEstimatedObj.keys();
+                            while (keys.hasNext()) {
+                                String key = keys.next();
+                                sb.append(key.replace("_100g", "")).append(": ").append(nutrimentsEstimatedObj.opt(key)).append(", ");
+                            }
+                            nutrimentsValue += sb.toString();
+                        }
+
+                        nutrimentsValue += "\nnutrition data per: " + nutritionDataPer;
+
+                        name = productName;
+                        brand = brands;
+                        //allergens = allergies.toString();
+                        imageUrl = image;
+                        nutriscoreGrade = nutriScoreGrade;
+                        allergenList = allergies;
+
+                        checkAllergens(allergenList, userAllergies);
+                        recordScan(name, brand);
+                        updateUI(image, productName, brands, allergies, etBarcode.getText().toString(), "Analyzing...");
+                        generateNutriAnalysis(userAllergies, allergenList, nutrimentsValue, name);
                         if(category!=null && nutriScoreGrade != null || !nutriScoreGrade.isEmpty()){
                             Log.d("CATEGORY", category);
                             if(!recommendations.isEmpty()){
                                 recommendations.clear();
                             }
-                            new Handler(Looper.getMainLooper()).postDelayed(()->{
-                                fetchAlternatives(category, nutriScoreGrade, allergies);
-                            }, 1500);
+                            fetchAlternatives(category, nutriScoreGrade, allergies);
                         }
-
-                        name = productName;
-                        brand = brands;
-                        allergens = allergies.toString();
-                        imageUrl = image;
-                        nutriscoreGrade = nutriScoreGrade;
-                        allergenList = allergies;
-
-                        checkAllergens(allergenList);
-                        recordScan(name, brand);
-                        updateUI(image, productName, brands, allergies, etBarcode.getText().toString());
 
                     }
                     catch (Exception e){
-                        throw new RuntimeException("Failed Fetching Data");
+                        e.printStackTrace();
+                        Log.e("SearchProduct", "Error: " + e.getMessage());
                     }
                 },
                 error -> {
@@ -465,11 +528,66 @@ public class ScanFragment extends Fragment {
                     else {
                         UIUtil.showSnackbar(parent, "Unexpected error: " + error.toString());
                     }
-        });
-
-
+                });
 
         r.add(jsonObjectRequest);
+    }
+
+
+    private void searchProduct(String barcode) {
+
+        String path = "users/" + uid + "/savedProducts/"+ barcode ;
+        DatabaseReference productRef = FirebaseDatabase.getInstance(DatabaseConstants.DATABASE_URL).getReference(path);
+
+        productRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+                    for (DataSnapshot child : snapshot.getChildren()) {
+                        Product product = child.getValue(Product.class);
+                        if (product != null) {
+                            name = product.getName();
+                            brand = product.getBrand();
+                            imageUrl = product.getImageUrl();
+                            nutriscoreGrade = product.getScore();
+                            allergenList = product.getAllergens();
+                            nutrimentAnalysis = product.getNutrimentsAnalysis();
+                            category = product.getCategory();
+                            updateUI(imageUrl, name, brand, allergenList, barcode, nutrimentAnalysis);
+                            checkAllergens(allergenList, userAllergies);
+
+                            if(isWifiConnected){
+                                if(category!=null && nutriscoreGrade != null || !nutriscoreGrade.isEmpty()){
+                                    Log.d("CATEGORY", category);
+                                    if(!recommendations.isEmpty()){
+                                        recommendations.clear();
+                                    }
+                                    fetchAlternatives(category, nutriscoreGrade, allergenList);
+                                }
+                            }
+                        }
+                    }
+                }
+                else{
+                    if(isWifiConnected){
+                        fetchProductFromApi(barcode);
+                    }else{
+                        UIUtil.showSnackbar(parent, "Product Not found in offline cache");
+                    }
+
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                if(isWifiConnected){
+                    fetchProductFromApi(barcode);
+                }else{
+                    UIUtil.showSnackbar(parent, "Unable to load product offline");
+                }
+            }
+        });
+
     }
 
     private void recordScan(String name, String brand){
@@ -495,6 +613,7 @@ public class ScanFragment extends Fragment {
 
         String path = "users/" + uid + "/savedProducts";
         String barcode = etBarcode.getText().toString();
+        String nutrimentAnalysis = tvNutrimentsAnalysis.getText().toString();
 
         DatabaseReference userRef = FirebaseDatabase.getInstance(DatabaseConstants.DATABASE_URL).getReference(path);
 
@@ -507,11 +626,13 @@ public class ScanFragment extends Fragment {
                     allergenList,
                     barcode,
                     nutriscoreGrade,
-                    System.currentTimeMillis()
+                    System.currentTimeMillis(),
+                    nutrimentAnalysis,
+                    category
             );
 
             userRef.child(barcode).setValue(savedProduct);
-            UIUtil.showSnackbar(parent, "Saved Product!");
+            UIUtil.showSnackbar(parent, "Product Saved!");
             ibBookmark.setBackgroundResource(R.drawable.bookmark_solid);
         }
         else{
@@ -523,7 +644,7 @@ public class ScanFragment extends Fragment {
     }
 
     private void fetchAlternatives(String category, String originalScore, List<String> userAllergens){
-
+        Log.d("HELLO", "im here");
         RequestQueue r = Volley.newRequestQueue(context);
 
             String url = "https://safebiteapi.vercel.app/api/recommendation?category="+category;
@@ -546,6 +667,8 @@ public class ScanFragment extends Fragment {
                             String score = obj.optString("nutriscore_grade", null);
                             String barcode = obj.optString("code",null);
                             JSONArray allergensArray = obj.optJSONArray("allergens_tags");
+                            Log.d("Nutri score", score);
+                            Log.d("HELLO", "im here2");
 
                             List<String> productAllergens = new ArrayList<>();
                             if(allergensArray != null){
@@ -555,8 +678,12 @@ public class ScanFragment extends Fragment {
                                 }
                             }
 
-                            if(score != null && isBetterNutriScore(score, originalScore)){
-                                recommendations.add(new Product(image, name, brand, productAllergens, barcode ,score, System.currentTimeMillis()));
+                            if (productAllergens.isEmpty()) {
+                                productAllergens.add("No Allergens Listed");
+                            }
+
+                            if(score != null && !score.isEmpty() && isBetterNutriScore(score, originalScore)){
+                                recommendations.add(new Product (image, name, brand, productAllergens, barcode ,score, System.currentTimeMillis(), "Analysis not available", category));
                             }
                         }
 
@@ -567,7 +694,7 @@ public class ScanFragment extends Fragment {
                         if(recommendations.size() > 10){
                             recommendations = recommendations.subList(0, 10);
                         }
-
+                        Log.d("HELLO", "hello: " + recommendations.size());
                         updateRecommendationsUI(recommendations);
 
                     } catch (Exception e){
@@ -577,13 +704,6 @@ public class ScanFragment extends Fragment {
                 error -> {
                     UIUtil.showSnackbar(parent, "Failed to fetch recommendations");
                 }) {
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                Map<String, String> headers = new HashMap<>();
-                headers.put("User-Agent", "SafeBiteApp/1.0 (safebiteproject2026@gmail.com)");
-                headers.put("Cookie", "user_session&YKkbaH2m9JVXZGxU6cihlnd3jANX9RZzusvm8Jfk2KL6AOOnHVNGS0e83AOpQMDR&user_id&safebite");
-                return headers;
-            }
         };
 
         r.add(request);
@@ -602,8 +722,49 @@ public class ScanFragment extends Fragment {
 
     }
 
+    private void generateNutriAnalysis(List<String> userAllergens, List<String> productAllergens, String productNutriments, String productName){
+
+        String url = "https://safebiteapi.vercel.app/api/nutrimentsAnalysis";
+
+        RequestQueue r = Volley.newRequestQueue(context);
+
+        try {
+
+            JSONObject body = new JSONObject();
+            body.put("productNutriments", productNutriments.toString());
+            body.put("productAllergens", productAllergens.toString());
+            body.put("userAllergens", userAllergens);
+            body.put("productName", productName);
+
+            JsonObjectRequest request = new JsonObjectRequest(
+                    Request.Method.POST,
+                    url,
+                    body,
+                    response -> {
+                        try {
+
+                             String reply = response.getString("reply");
+                             reply = reply.replace("*", "");
+                             tvNutrimentsAnalysis.setText(reply);
+
+                        } catch (Exception e){
+                            e.printStackTrace();
+                        }
+                    },
+                    error -> {
+                        UIUtil.showSnackbar(parent, "Failed to fetch recommendations");
+                    });
+
+            r.add(request);
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+    }
+
     private boolean isBetterNutriScore(String candidate, String original){
-        return nutriScoreValue(candidate) > nutriScoreValue(original);
+        return nutriScoreValue(candidate) >= nutriScoreValue(original);
     }
 
     private void updateRecommendationsUI(List<Product> recommendations){

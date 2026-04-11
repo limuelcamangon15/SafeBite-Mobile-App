@@ -59,6 +59,10 @@
             adapter = new SavedAdapter(view, getContext(), savedProductList, auth);
             rvSaved.setAdapter(adapter);
 
+            if(savedProductList.isEmpty()){
+                rvSaved.setVisibility(View.GONE);
+            }
+
             String uid = auth.getCurrentUser().getUid();
             String path = "users/" + uid + "/savedProducts";
             DatabaseReference historyRef = FirebaseDatabase.getInstance(DatabaseConstants.DATABASE_URL)

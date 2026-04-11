@@ -15,6 +15,7 @@ import androidx.fragment.app.Fragment;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.checkbox.MaterialCheckBox;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.Firebase;
 import com.google.firebase.auth.FirebaseAuth;
@@ -25,6 +26,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.project.safebite.R;
 import com.project.safebite.constants.DatabaseConstants;
 import com.project.safebite.model.User;
+import com.project.safebite.offlineAuth.AuthStorage;
 import com.project.safebite.ui.activity.AboutActivity;
 import com.project.safebite.ui.activity.LoginActivity;
 import com.project.safebite.ui.activity.TermsAndConditionsActivity;
@@ -199,7 +201,7 @@ public class ProfileFragment extends Fragment {
         // databaseurl/users/uid
         DatabaseReference ref = FirebaseDatabase.getInstance(DatabaseConstants.DATABASE_URL)
                 .getReference("users")
-                        .child(uid);
+                .child(uid);
 
 
         if(!fullName.trim().equals("")) {
@@ -226,12 +228,22 @@ public class ProfileFragment extends Fragment {
     }
 
     private void logOut(){
-        Intent intent = new Intent(requireActivity(), LoginActivity.class);
-        auth.signOut();
+        new MaterialAlertDialogBuilder(requireContext())
+                .setTitle("Delete Item")
+                .setMessage("Are you sure you want to Log Out?")
+                .setPositiveButton("Log Out", (dialog, which) -> {
 
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intent);
-        requireActivity().finish();
+                    Intent intent = new Intent(requireActivity(), LoginActivity.class);
+                    new AuthStorage(requireContext()).clearUser();
+                    auth.signOut();
+
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                    requireActivity().finish();
+
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
     }
 
     private void setAllergyCheckboxes(List<String> allergies) {

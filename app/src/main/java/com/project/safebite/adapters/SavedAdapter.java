@@ -21,13 +21,14 @@ import com.project.safebite.model.Product;
 import com.project.safebite.utils.UIUtil;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
 public class SavedAdapter extends RecyclerView.Adapter<SavedAdapter.SavedViewHolder>{
 
-    private List<Product> savedProductList;
+    private List<Product> savedProductList = new ArrayList<>();
 
     private Context context;
     private boolean isProductSaved = false;
@@ -61,8 +62,9 @@ public class SavedAdapter extends RecyclerView.Adapter<SavedAdapter.SavedViewHol
         if(imageUrl != null && !imageUrl.isEmpty()){
             Glide.with(context)
                     .load(imageUrl)
-                    .placeholder(R.drawable.samplefudgee)
-                    .error(R.drawable.samplefudgee)
+                    .placeholder(R.drawable.placeholder)
+                    .error(R.drawable.placeholder)
+                    .override(300,300)
                     .into(holder.ivImage);
         }else{
             holder.ivImage.setImageResource(R.drawable.samplefudgee);
@@ -70,7 +72,7 @@ public class SavedAdapter extends RecyclerView.Adapter<SavedAdapter.SavedViewHol
 
         holder.tvName.setText(product.getName());
         holder.tvBrand.setText(product.getBrand());
-        holder.tvAllergens.setText(product.getAllergens().toString());
+        holder.tvAllergens.setText(android.text.TextUtils.join("\n", product.getAllergens()));
         holder.ibBookmark.setVisibility(View.VISIBLE);
         holder.ibBookmark.setOnClickListener(v->saveProduct(product, holder.ibBookmark));
 

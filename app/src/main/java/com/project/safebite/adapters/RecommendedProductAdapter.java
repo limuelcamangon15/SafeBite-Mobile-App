@@ -59,8 +59,9 @@ public class RecommendedProductAdapter extends RecyclerView.Adapter<RecommendedP
         if(imageUrl != null && !imageUrl.isEmpty()){
             Glide.with(context)
                     .load(imageUrl)
-                    .placeholder(R.drawable.samplefudgee)
-                    .error(R.drawable.samplefudgee)
+                    .placeholder(R.drawable.placeholder)
+                    .error(R.drawable.placeholder)
+                    .override(300,300)
                     .into(holder.ivImage);
         }else{
             holder.ivImage.setImageResource(R.drawable.samplefudgee);
@@ -68,7 +69,7 @@ public class RecommendedProductAdapter extends RecyclerView.Adapter<RecommendedP
 
         holder.tvName.setText(product.getName());
         holder.tvBrand.setText(product.getBrand());
-        holder.tvAllergens.setText(product.getAllergens().toString());
+        holder.tvAllergens.setText(android.text.TextUtils.join("\n", product.getAllergens()));
         holder.ibBookmark.setVisibility(View.VISIBLE);
         holder.ibBookmark.setOnClickListener(v->saveProduct(product, holder.ibBookmark));
 

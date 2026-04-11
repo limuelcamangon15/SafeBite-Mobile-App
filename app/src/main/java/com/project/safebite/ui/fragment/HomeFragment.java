@@ -56,7 +56,7 @@ public class HomeFragment extends Fragment {
 
         postList = new ArrayList<>();
 
-        adapter = new PostAdapter(getContext(), postList);
+        adapter = new PostAdapter(getContext(), postList, view, "home");
         recyclerView.setAdapter(adapter);
 
         DatabaseReference postsRef = FirebaseDatabase.getInstance(DatabaseConstants.DATABASE_URL)

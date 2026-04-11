@@ -53,7 +53,7 @@ public class PostFormActivity extends AppCompatActivity {
     private FirebaseAuth auth;
     int maxContentLength = 200;
     int postContentLength = 0;
-    String fullName = "";
+    String fullName = "", postId = "";
     View parent;
 
     @Override
@@ -95,22 +95,64 @@ public class PostFormActivity extends AppCompatActivity {
         Bundle receivedBundle = getIntent().getExtras();
         if(receivedBundle != null){
 
-            name = receivedBundle.getString("name");
-            brand = receivedBundle.getString("brand");
-            allergens = receivedBundle.getString("allergens");
-            imageUrl = receivedBundle.getString("imageUrl");
+            if(receivedBundle.getString("source").equals("history")){
+
+                    fullName = receivedBundle.getString("username");
+                    postId = receivedBundle.getString("postId");
+                    name = receivedBundle.getString("productName");
+                    brand = receivedBundle.getString("productBrand");
+                    allergens = receivedBundle.getString("productAllergens");
+                    selectedEmoji = receivedBundle.getString("emoji");
+                    postContent = receivedBundle.getString("postContent");
+                    imageUrl = receivedBundle.getString("imageUrl");
+
+                    switch (selectedEmoji){
+                        case "Angry":
+                            emoji1.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.white)));
+                            selectedBtn = emoji1;
+                            break;
+                        case "Happy":
+                            emoji2.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.white)));
+                            selectedBtn = emoji2;
+                            break;
+                        case "Sad":
+                            emoji3.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.white)));
+                            selectedBtn = emoji3;
+                            break;
+                        case "Neutral":
+                            emoji4.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.white)));
+                            selectedBtn = emoji4;
+                            break;
+                    }
+                    tvPostContentCount.setText(String.valueOf(postContent.trim().length()));
+                    btnSubmit.setText("UPDATE");
+                    btnSubmit.setOnClickListener(v->updatePost(postId));
+
+            }else{
+
+                btnSubmit.setText("SUBMIT");
+                btnSubmit.setOnClickListener(v -> createNewPost());
+                name = receivedBundle.getString("name");
+                brand = receivedBundle.getString("brand");
+                allergens = receivedBundle.getString("allergens");
+                imageUrl = receivedBundle.getString("imageUrl");
+            }
+
 
         }
 
         Glide.with(PostFormActivity.this)
                 .load(imageUrl)
+                .placeholder(R.drawable.placeholder)
+                .error(R.drawable.placeholder)
+                .override(300,300)
                 .into(ivFoodImage);
 
         tvFoodTitle.setText(name);
         tvBrand.setText(brand);
-        tvAllergens.setText(allergens
-                .replace("[","")
-                .replace("]",""));
+        tvAllergens.setText(allergens);
+        etPostContent.setText(postContent);
+
 
         etPostContent.addTextChangedListener(new TextWatcher() {
 
@@ -147,8 +189,45 @@ public class PostFormActivity extends AppCompatActivity {
             }
         });
 
-        btnSubmit.setOnClickListener(v -> createNewPost());
+
         btnCancel.setOnClickListener(v -> {finish();});
+
+    }
+
+    private void updatePost(String postId){
+
+        String postContent = etPostContent.getText().toString();
+        String allergenList = tvAllergens.getText().toString();
+        String brand = tvBrand.getText().toString();
+        String foodTitle = tvFoodTitle.getText().toString();
+
+        if(!foodTitle.isEmpty()||
+            !brand.isEmpty()||
+            !allergenList.isEmpty()||
+            !postContent.isEmpty()||
+            !selectedEmoji.isEmpty()||
+            !imageUrl.isEmpty()||
+            !fullName.isEmpty()||
+            !postId.isEmpty()
+        ){
+            DatabaseReference ref = FirebaseDatabase.getInstance(DatabaseConstants.DATABASE_URL)
+                    .getReference("posts/" + postId);
+
+            Map<String, Object> updates = new HashMap<>();
+            updates.put("postFeeling", selectedEmoji);
+            updates.put("postContent", postContent);
+            updates.put("allergens", allergenList);
+
+            ref.updateChildren(updates);
+
+            UIUtil.showSnackbar(parent, "Post Updated Successfully!");
+            new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                finish();
+            }, 1500);
+        }else{
+            UIUtil.showSnackbar(parent, "All fields are required!");
+        }
+
 
     }
 
@@ -196,6 +275,7 @@ public class PostFormActivity extends AppCompatActivity {
                    String postId = rootRef.child("posts").push().getKey();
 
                    Post postObject = new Post(
+                           postId,
                            fullName,
                            selectedEmoji,
                            postContent,

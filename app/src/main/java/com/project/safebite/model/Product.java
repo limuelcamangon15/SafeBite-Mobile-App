@@ -12,6 +12,8 @@ public class Product {
     String barcode;
     long scannedAt;
     long timestamp;
+    private String nutrimentsAnalysis;
+    private String category;
 
     public Product(){};
 
@@ -29,7 +31,9 @@ public class Product {
             List<String> allergens,
             String barcode,
             String score,
-            long timestamp
+            long timestamp,
+            String nutrimentsAnalysis,
+            String category
     ){
         this.imageUrl = imageUrl;
         this.name = name;
@@ -38,6 +42,8 @@ public class Product {
         this.score = score;
         this.barcode = barcode;
         this.timestamp = timestamp;
+        this.nutrimentsAnalysis = nutrimentsAnalysis;
+        this.category = category;
     }
 
     public List<String> getAllergens() {
@@ -102,5 +108,21 @@ public class Product {
 
     public void setTimestamp(long timestamp) {
         this.timestamp = timestamp;
+    }
+
+    public String getNutrimentsAnalysis() {
+        return nutrimentsAnalysis;
+    }
+
+    public void setNutrimentsAnalysis(String nutrimentsAnalysis) {
+        this.nutrimentsAnalysis = nutrimentsAnalysis;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public String getCategory() {
+        return category;
     }
 }

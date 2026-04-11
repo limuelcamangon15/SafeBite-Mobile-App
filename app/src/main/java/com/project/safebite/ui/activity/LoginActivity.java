@@ -11,6 +11,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -20,7 +21,15 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.project.safebite.R;
+import com.project.safebite.constants.DatabaseConstants;
+import com.project.safebite.offlineAuth.AuthStorage;
 import com.project.safebite.utils.UIUtil;
 
 public class LoginActivity extends AppCompatActivity {
@@ -37,6 +46,19 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
+
+        FirebaseDatabase.getInstance(DatabaseConstants.DATABASE_URL).setPersistenceEnabled(true);
+
+        AuthStorage authStorage = new AuthStorage(context);
+        if(authStorage.isLoggedIn()){
+            authStorage.refreshSession();
+            Intent loggedIntent = new Intent(context, MainActivity.class);
+            loggedIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(loggedIntent);
+            finish();
+            return;
+        }
+
         setContentView(R.layout.activity_login);
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.activityLogin), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -96,9 +118,19 @@ public class LoginActivity extends AppCompatActivity {
         UIUtil.showLoading(context, btnLogIn, pbLogIn);
 
         auth.signInWithEmailAndPassword(email, password)
-                        .addOnCompleteListener(task -> {
-                            if(task.isSuccessful()){
-                                UIUtil.hideLoading(context, btnLogIn, pbLogIn, "Log In");
+                .addOnCompleteListener(task -> {
+                    if(task.isSuccessful()){
+                        UIUtil.hideLoading(context, btnLogIn, pbLogIn, "Log In");
+
+                        FirebaseUser userLogged = task.getResult().getUser();
+                        String uid = userLogged.getUid();
+                        String path = "users/" + uid + "/fullName";
+                        DatabaseReference userRef = FirebaseDatabase.getInstance(DatabaseConstants.DATABASE_URL).getReference(path);
+                        userRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                String name = snapshot.getValue(String.class);
+                                new AuthStorage(context).saveUser(task.getResult().getUser(), name);
 
                                 //short delay
                                 new Handler(Looper.getMainLooper()).postDelayed(() -> {
@@ -108,12 +140,17 @@ public class LoginActivity extends AppCompatActivity {
                                     finish();
                                 },1000);
                             }
-                            else {
-                                UIUtil.showSnackbar(findViewById(R.id.activityLogin),"Log in failed, please try again.");
-
-                                UIUtil.hideLoading(context, btnLogIn, pbLogIn, "Log In");
-                            }
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError error) {}
                         });
+
+                    }
+                    else {
+                        UIUtil.showSnackbar(findViewById(R.id.activityLogin),"Log in failed, please try again.");
+
+                        UIUtil.hideLoading(context, btnLogIn, pbLogIn, "Log In");
+                    }
+                });
     }
 
     private void setRealtimeEditTextListener(){
