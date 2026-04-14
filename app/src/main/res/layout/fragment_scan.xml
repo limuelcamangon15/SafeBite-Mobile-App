@@ -366,8 +366,6 @@
                             >
 
                         <!-- Notice Box -->
-
-
                             <LinearLayout
                                 android:layout_width="0dp"
                                 android:layout_weight="7"
@@ -452,6 +450,7 @@
                         android:textSize="20sp"
                         android:textStyle="bold"
                         android:layout_marginBottom="10dp"
+                        android:visibility="gone"
                         />
                 </LinearLayout>
 
@@ -460,6 +459,20 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:padding="8dp"
+                    android:visibility="gone"
+                    />
+
+                <TextView
+                    android:id="@+id/tvNoAlt"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text=""
+                    android:textSize="15sp"
+                    android:layout_marginTop="20dp"
+                    android:gravity="center"
+                    android:textColor="#80FFFFFF"
+                    android:padding="10dp"
+                    android:visibility="gone"
                     />
 
             </LinearLayout>

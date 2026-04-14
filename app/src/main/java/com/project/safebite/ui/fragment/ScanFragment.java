@@ -100,7 +100,7 @@ public class ScanFragment extends Fragment {
     View parent, vLine;
     MaterialButton btnScan, btnPost;
     TextInputEditText etBarcode;
-    TextView tvName, tvBrand, tvAllergens, tvNutrimentsAnalysis, tvAltProducts;
+    TextView tvName, tvBrand, tvAllergens, tvNutrimentsAnalysis, tvAltProducts, tvNoAlt;
     ImageView ivImage ;
     ImageButton ibSave, ibAllergic;
     PreviewView pvScanner;
@@ -271,6 +271,7 @@ public class ScanFragment extends Fragment {
         btnPost = view.findViewById(R.id.btnPost);
         bannerAllergic = view.findViewById(R.id.bannerAllergic);
         vLine = view.findViewById(R.id.vLine);
+        tvNoAlt = view.findViewById(R.id.tvNoAlt);
 
         if (FuncUtil.isConnected(context)) {
             uid = auth.getCurrentUser() != null ? auth.getCurrentUser().getUid() : offlineAuth.getUserId();
@@ -900,12 +901,22 @@ public class ScanFragment extends Fragment {
     }
 
     private void updateRecommendationsUI(List<Product> recommendations){
-        rvProduct.setLayoutManager(new LinearLayoutManager(context));
-        rvProduct.setHasFixedSize(true);
-        rvProduct.setNestedScrollingEnabled(false);
 
-        rpAdapter = new RecommendedProductAdapter(parent, context, recommendations, userAllergies);
-        rvProduct.setAdapter(rpAdapter);
+
+        if(recommendations.isEmpty()){
+            rvProduct.setVisibility(View.GONE);
+            tvNoAlt.setVisibility(View.VISIBLE);
+            tvNoAlt.setText("No Alternative Products to Show");
+        }else{
+            tvNoAlt.setVisibility(View.GONE);
+            rvProduct.setVisibility(View.VISIBLE);
+            rvProduct.setLayoutManager(new LinearLayoutManager(context));
+            rvProduct.setHasFixedSize(true);
+            rvProduct.setNestedScrollingEnabled(false);
+
+            rpAdapter = new RecommendedProductAdapter(parent, context, recommendations, userAllergies);
+            rvProduct.setAdapter(rpAdapter);
+        }
 
     }
 

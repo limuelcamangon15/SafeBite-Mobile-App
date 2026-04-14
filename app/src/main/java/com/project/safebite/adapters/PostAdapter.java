@@ -24,6 +24,7 @@ import com.project.safebite.R;
 import com.project.safebite.constants.DatabaseConstants;
 import com.project.safebite.model.Post;
 import com.project.safebite.ui.activity.PostFormActivity;
+import com.project.safebite.utils.FuncUtil;
 import com.project.safebite.utils.UIUtil;
 
 import java.util.HashMap;
@@ -63,11 +64,10 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
 
         int colorRes = 0;
         int emojiIconRes = 0;
-        int textColorRes = R.color.black;
+        int textColorRes = R.color.white;
         switch (post.getPostFeeling()){
             case "Angry" :
                 colorRes = R.color.red;
-                textColorRes = R.color.white;
                 emojiIconRes = R.drawable.angryemoji;
                 break;
             case "Happy" :
@@ -87,15 +87,22 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
                 emojiIconRes = R.drawable.samplefudgee;
                 break;
         }
-
+        holder.moodBar.setBackgroundColor(ContextCompat.getColor(context, colorRes));
+        holder.moodCommentBar.setBackgroundColor(ContextCompat.getColor(context, colorRes));
         holder.emojiTv.setTextColor(ContextCompat.getColor(context, colorRes));
         holder.postContentTv.setBackgroundTintList(ContextCompat.getColorStateList(context, colorRes));
         holder.postContentTv.setTextColor(ContextCompat.getColorStateList(context, textColorRes));
         holder.postContentTv.setText(post.getPostContent());
-        holder.allergensTv.setText(post.getAllergens());
+
+        String allergenList = post.getAllergens();
+        String[] items = allergenList.split("\\r?\\n");
+        String allergens = android.text.TextUtils.join(", ", items);
+
+        holder.allergensTv.setText(allergens);
         holder.brandTv.setText(post.getBrand());
         holder.foodTitleTv.setText(post.getFoodTitle());
         holder.emojiTv.setText(post.getPostFeeling());
+        holder.tvTimeStamp.setText(FuncUtil.getRelativeTime(post.getPostedAt()));
         String imageUrl = post.getImageURL();
 
         //emoji icon
@@ -172,9 +179,6 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
 
         }
 
-
-
-
     }
 
 
@@ -205,10 +209,11 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
     }
 
     public static class PostViewHolder extends RecyclerView.ViewHolder{
-        TextView usernameTv, postContentTv, brandTv, allergensTv, emojiTv, foodTitleTv;
+        TextView usernameTv, postContentTv, brandTv, allergensTv, emojiTv, foodTitleTv, tvTimeStamp;
         ImageView ivEmojiIcon, foodImageIv; //for images to
 
         ImageButton ibOptions;
+        View moodBar, moodCommentBar;
 
         public PostViewHolder(@NonNull View itemView){
             super(itemView);
@@ -219,10 +224,14 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
             emojiTv = itemView.findViewById(R.id.emojiTv);
             foodTitleTv = itemView.findViewById(R.id.foodTitleTV);
             allergensTv = itemView.findViewById(R.id.tvAllergens);
+            tvTimeStamp = itemView.findViewById(R.id.tvTimestamp);
 
             foodImageIv = itemView.findViewById(R.id.foodImageIv);
             ivEmojiIcon = itemView.findViewById(R.id.ivEmojiIcon);
             ibOptions = itemView.findViewById(R.id.ibOptions);
+            moodBar = itemView.findViewById(R.id.moodBar);
+            moodCommentBar = itemView.findViewById(R.id.moodCommentBar);
+
         }
     }
 }

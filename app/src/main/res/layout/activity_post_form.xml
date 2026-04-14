@@ -51,16 +51,29 @@
             android:textColor="@color/white"
             />
 
-            <com.google.android.material.card.MaterialCardView
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
+            app:cardCornerRadius="22dp"
+            app:cardElevation="0dp"
+            app:strokeWidth="0.8dp"
+            app:strokeColor="#20FFFFFF"
+            android:backgroundTint="#14FFFFFF">
+
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:layout_marginBottom="16dp"
-                app:cardCornerRadius="24dp"
-                app:cardElevation="0dp"
-                app:strokeWidth="1dp"
-                app:strokeColor="#20FFFFFF"
-                android:backgroundTint="#1AFFFFFF">
+                android:orientation="vertical">
+
+                <View
+                    android:id="@+id/moodBar"
+                    android:layout_width="match_parent"
+                    android:layout_height="4dp"
+                    android:background="#F5C842"
+                    android:visibility="gone"
+                    />
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -70,156 +83,125 @@
 
                     <ImageView
                         android:id="@+id/ivFoodImage"
-                        android:layout_width="200dp"
-                        android:layout_height="150dp"
-                        android:layout_gravity="center"
-                        /> 
-                    <!-- Food Title -->
+                        android:layout_width="match_parent"
+                        android:layout_height="170dp"
+                        android:scaleType="centerCrop"
+                        android:background="@drawable/food_image_placeholder_bg"
+                        android:layout_marginBottom="12dp"/>
+
                     <TextView
                         android:id="@+id/tvFoodTitle"
-                        android:layout_width="match_parent"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textColor="@color/white"
-                        android:textSize="20sp"
-                        android:lineSpacingExtra="4dp"
-                        android:alpha="0.9"
-                        android:text=""
                         android:textStyle="bold"
-                        android:gravity="center"
-                        android:paddingBottom="10dp"/>
+                        android:textSize="16sp"
+                        android:textColor="@color/white"
+                        android:layout_gravity="center_horizontal"
+                        android:text="Product Name"/>
 
-                    <!-- Brand -->
                     <TextView
                         android:id="@+id/tvBrand"
-                        android:layout_width="match_parent"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textColor="@color/white"
-                        android:textSize="20sp"
-                        android:lineSpacingExtra="4dp"
-                        android:alpha="0.9"
-                        android:text=""
-                        android:textStyle="bold"
-                        android:gravity="center"
-                        android:paddingBottom="10dp"/>
+                        android:textSize="13sp"
+                        android:textColor="#80FFFFFF"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginBottom="12dp"
+                        android:text="Brand Name"/>
 
-                    <!-- Allergens -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:layout_marginTop="12dp">
+                        android:layout_marginBottom="16dp">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Allergen/s"
-                            android:textSize="12sp"
-                            android:layout_marginBottom="2dp"
-                            android:paddingLeft="10dp"
-                            android:layout_gravity="left"
-                            android:textColor="@color/white"/>
+                            android:text="ALLERGENS"
+                            android:textSize="10sp"
+                            android:textColor="#4DFFFFFF"
+                            android:layout_marginBottom="6dp"/>
 
-                        <com.google.android.material.card.MaterialCardView
-                            android:layout_width="match_parent"
+                        <TextView
+                            android:id="@+id/tvAllergens"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:minHeight="40dp"
-                            app:cardCornerRadius="16dp"
-                            app:cardElevation="0dp"
-                            app:strokeWidth="1dp"
-                            app:strokeColor="#20FFFFFF"
-                            android:backgroundTint="@color/gray2">
-
-                            <TextView
-                                android:id="@+id/tvAllergens"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text=""
-                                android:textSize="16sp"
-                                android:padding="10dp"
-                                android:layout_gravity="center"
-                                android:textColor="@color/white"/>
-
-                        </com.google.android.material.card.MaterialCardView>
+                            android:text="None"
+                            android:textSize="13sp"
+                            android:textColor="#99FFFFFF"
+                            android:background="@drawable/allergen_chip_bg"
+                            android:paddingStart="10dp"
+                            android:paddingEnd="10dp"
+                            android:paddingTop="4dp"
+                            android:paddingBottom="4dp"/>
                     </LinearLayout>
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Share what you feel on this product:"
-                        android:textColor="@color/white"
+                        android:text="How do you feel about this product?"
+                        android:textColor="#80FFFFFF"
+                        android:textSize="12sp"
                         android:paddingBottom="12dp"
-                        />
-
+                        android:gravity="center"/>
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:gravity="center"
-                        >
+                        android:layout_marginBottom="20dp">
 
                         <LinearLayout
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:gravity="center"
                             android:orientation="vertical"
-                            android:layout_marginEnd="12dp"
-                            >
-
+                            android:layout_marginEnd="12dp">
                             <com.google.android.material.button.MaterialButton
                                 android:id="@+id/emoji1"
                                 android:tag="Angry"
-                                android:layout_width="60dp"
-                                android:layout_height="60dp"
+                                android:layout_width="54dp"
+                                android:layout_height="54dp"
                                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                                 app:icon="@drawable/angryemoji"
                                 app:iconTint="@null"
-                                app:iconSize="35dp"
-                                app:backgroundTint="@color/black"
-                                android:textSize="22sp"
-                                app:cornerRadius="10dp"
-                                />
-
+                                app:iconSize="30dp"
+                                app:backgroundTint="#20FFFFFF"
+                                app:cornerRadius="12dp"
+                                app:strokeWidth="0dp"/>
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Angry"
                                 android:textSize="10sp"
-                                android:textColor="@color/white"
-                                />
-
+                                android:textColor="#80FFFFFF"/>
                         </LinearLayout>
-
 
                         <LinearLayout
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:gravity="center"
                             android:orientation="vertical"
-                            android:layout_marginEnd="12dp"
-                            >
-
+                            android:layout_marginEnd="12dp">
                             <com.google.android.material.button.MaterialButton
                                 android:id="@+id/emoji2"
                                 android:tag="Happy"
-                                android:layout_width="60dp"
-                                android:layout_height="60dp"
+                                android:layout_width="54dp"
+                                android:layout_height="54dp"
                                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                                 app:icon="@drawable/likeemoji"
                                 app:iconTint="@null"
-                                app:iconSize="35dp"
-                                app:backgroundTint="@color/black"
-                                android:textSize="22sp"
-                                app:cornerRadius="10dp"
-                                />
-
+                                app:iconSize="30dp"
+                                app:backgroundTint="#20FFFFFF"
+                                app:cornerRadius="12dp"
+                                app:strokeWidth="0dp"/>
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Happy"
                                 android:textSize="10sp"
-                                android:textColor="@color/white"
-                                />
-
+                                android:textColor="#80FFFFFF"/>
                         </LinearLayout>
 
                         <LinearLayout
@@ -227,31 +209,25 @@
                             android:layout_height="wrap_content"
                             android:gravity="center"
                             android:orientation="vertical"
-                            android:layout_marginEnd="12dp"
-                            >
-
+                            android:layout_marginEnd="12dp">
                             <com.google.android.material.button.MaterialButton
                                 android:id="@+id/emoji3"
                                 android:tag="Sad"
-                                android:layout_width="60dp"
-                                android:layout_height="60dp"
+                                android:layout_width="54dp"
+                                android:layout_height="54dp"
                                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                                 app:icon="@drawable/sademoji"
                                 app:iconTint="@null"
-                                app:iconSize="35dp"
-                                app:backgroundTint="@color/black"
-                                android:textSize="22sp"
-                                app:cornerRadius="10dp"
-                                />
-
+                                app:iconSize="30dp"
+                                app:backgroundTint="#20FFFFFF"
+                                app:cornerRadius="12dp"
+                                app:strokeWidth="0dp"/>
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Sad"
                                 android:textSize="10sp"
-                                android:textColor="@color/white"
-                                />
-
+                                android:textColor="#80FFFFFF"/>
                         </LinearLayout>
 
                         <LinearLayout
@@ -259,92 +235,90 @@
                             android:layout_height="wrap_content"
                             android:gravity="center"
                             android:orientation="vertical"
-                            android:layout_marginEnd="12dp"
-                            >
-
+                            android:layout_marginEnd="12dp">
                             <com.google.android.material.button.MaterialButton
                                 android:id="@+id/emoji4"
                                 android:tag="Neutral"
-                                android:layout_width="60dp"
-                                android:layout_height="60dp"
+                                android:layout_width="54dp"
+                                android:layout_height="54dp"
                                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                                 app:icon="@drawable/neutralemoji"
                                 app:iconTint="@null"
-                                app:iconSize="35dp"
-                                app:backgroundTint="@color/black"
-                                android:textSize="22sp"
-                                app:cornerRadius="10dp"
-                                />
-
+                                app:iconSize="30dp"
+                                app:backgroundTint="#20FFFFFF"
+                                app:cornerRadius="12dp"
+                                app:strokeWidth="0dp"/>
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Neutral"
                                 android:textSize="10sp"
-                                android:textColor="@color/white"
-                                />
-
+                                android:textColor="#80FFFFFF"/>
                         </LinearLayout>
 
                     </LinearLayout>
 
-
-                    <LinearLayout
+                    <RelativeLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="10dp"
-                        >
+                        android:background="@drawable/mood_comment_bg">
+
+                        <View
+                            android:id="@+id/moodCommentBar"
+                            android:layout_width="4dp"
+                            android:layout_height="0dp"
+                            android:layout_alignTop="@id/etPostContent"
+                            android:layout_alignBottom="@id/etPostContent"
+                            android:layout_alignParentStart="true"
+                            android:background="#F5C842"
+                            android:visibility="gone"
+                            />
 
                         <EditText
                             android:id="@+id/etPostContent"
                             android:layout_width="match_parent"
-                            android:layout_height="80dp"
-                            android:background="@drawable/rounded_corner"
-                            android:backgroundTint="@color/light_peach"
-                            android:padding="8dp"
-                            android:textSize="15sp"
-                            android:hint="Leave your thoughts here..."
-                            android:gravity="start"
-                            />
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:gravity="end"
-                            >
+                            android:minHeight="80dp"
+                            android:layout_toEndOf="@id/moodCommentBar"
+                            android:background="@android:color/transparent"
+                            android:padding="12dp"
+                            android:hint="Leave your thoughts here..."
+                            android:textColorHint="#4DFFFFFF"
+                            android:gravity="top"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/white"/>
+                    </RelativeLayout>
 
-                            <TextView
-                                android:id="@+id/tvPostContentCount"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="0"
-                                android:textColor="@color/light_peach"
-                                android:textSize="10sp"
-                                />
-
-                            <TextView
-
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="/200"
-                                android:textColor="@color/light_peach"
-                                android:textSize="10sp"
-                                android:paddingEnd="5dp"
-                                />
-
-
-                        </LinearLayout>
-
-
-
-
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="end"
+                        >
+                        <TextView
+                            android:id="@+id/tvPostContentCount"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="end"
+                            android:text="0"
+                            android:textColor="#4DFFFFFF"
+                            android:textSize="10sp"
+                            android:paddingTop="4dp"/>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="end"
+                            android:text="/200"
+                            android:textColor="#4DFFFFFF"
+                            android:textSize="10sp"
+                            android:paddingTop="4dp"/>
                     </LinearLayout>
 
-                </LinearLayout>
 
-            </com.google.android.material.card.MaterialCardView>
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnSubmit"

@@ -8,6 +8,7 @@
     android:orientation="vertical"
     tools:context=".ui.activity.MainActivity"
     android:background="@drawable/bg_gradient">
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -15,28 +16,34 @@
 
         <LinearLayout
             android:id="@+id/llOffline"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:background="@drawable/border_bottom"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/bg_offline_pill"
             android:gravity="center"
-            android:paddingBottom="2dp"
-            android:visibility="gone"
-            >
+            android:orientation="horizontal"
+            android:paddingStart="16dp"
+            android:paddingTop="6dp"
+            android:paddingEnd="16dp"
+            android:paddingBottom="6dp"
+            android:visibility="gone">
 
             <ImageView
-                android:layout_width="15dp"
-                android:layout_height="match_parent"
-                android:src="@drawable/link_slash_solid"
-                android:layout_marginRight="5dp"/>
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:layout_marginEnd="8dp"
+                android:src="@drawable/wifi_off_24px"
+                app:tint="#FFB300" />
 
             <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="offline mode"
-                android:gravity="center"
-                android:textSize="15sp"
-                android:textColor="@color/gray"/>
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Offline Mode"
+            android:textColor="#FFB300"
+            android:textSize="13sp"
+            android:textStyle="bold" />
 
         </LinearLayout>
 

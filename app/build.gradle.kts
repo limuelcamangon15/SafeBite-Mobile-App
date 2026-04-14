@@ -33,6 +33,7 @@ android {
 }
 
 dependencies {
+    implementation("com.google.android.flexbox:flexbox:3.0.0")
     implementation("com.github.bumptech.glide:okhttp3-integration:4.16.0")
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
     implementation("com.google.firebase:firebase-database:22.0.1")

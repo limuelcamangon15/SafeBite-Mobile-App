@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.project.safebite.R;
 import com.project.safebite.model.Product;
+import com.project.safebite.utils.FuncUtil;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -44,8 +45,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.HistoryV
         holder.tvName.setText(product.getName());
         holder.tvBarcode.setText(product.getBarcode());
 
-        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy | hh:mm a", Locale.getDefault());
-        String timestamp = sdf.format(new Date(product.getTimestamp()));
+        String timestamp = FuncUtil.getRelativeTime(product.getTimestamp());
         holder.tvTimestamp.setText(timestamp);
 
     }

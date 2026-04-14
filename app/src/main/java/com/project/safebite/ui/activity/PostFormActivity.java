@@ -150,7 +150,12 @@ public class PostFormActivity extends AppCompatActivity {
 
         tvFoodTitle.setText(name);
         tvBrand.setText(brand);
-        tvAllergens.setText(allergens);
+
+        String allergenList = allergens;
+        String[] items = allergenList.split("\\r?\\n");
+        String convertedAllergens = android.text.TextUtils.join(", ", items);
+
+        tvAllergens.setText(convertedAllergens);
         etPostContent.setText(postContent);
 
 
@@ -280,8 +285,8 @@ public class PostFormActivity extends AppCompatActivity {
                            selectedEmoji,
                            postContent,
                            imageUrl,
-                           foodTitle,
                            brand,
+                           foodTitle,
                            allergenList
                    );
 

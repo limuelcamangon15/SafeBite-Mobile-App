@@ -53,6 +53,7 @@
         FirebaseAuth auth;
 
         private TextView btnFilterAll, btnFilterAllergic,btnFilterSaved;
+        String text = "No Products to show";
         private LinearLayout llFilter;
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
@@ -89,15 +90,15 @@
 
 
         private void handleFilterClick(TextView clickedView, LinearLayout parent, String uid){
-//            if (parent == null) return;
-//
-//            for (int i = 0; i < parent.getChildCount(); i++) {
-//                View child = parent.getChildAt(i);
-//                if (child instanceof TextView) {
-//                    child.setBackgroundResource(R.drawable.filter_bg);
-//                    ((TextView) child).setTextColor(Color.parseColor("#3b6d11"));
-//                }
-//            }
+           if (parent == null) return;
+
+          for (int i = 0; i < parent.getChildCount(); i++) {
+               View child = parent.getChildAt(i);
+                if (child instanceof TextView) {
+                   child.setBackgroundResource(R.drawable.filter_bg);
+                   ((TextView) child).setTextColor(Color.parseColor("#3b6d11"));
+               }
+          }
 
             clickedView.setBackgroundResource(R.drawable.filter_bg_active);
             clickedView.setTextColor(Color.parseColor("#A4C639"));
@@ -123,12 +124,15 @@
                 case "All":
                     pathToFetch.add("users/" + uid + "/savedProducts");
                     pathToFetch.add("users/" + uid + "/savedAllergicProducts");
+                    text = "No Products to show";
                     break;
                 case "Saved":
                     pathToFetch.add("users/" + uid + "/savedProducts");
+                    text = "No Saved Products to show";
                     break;
                 case "Allergic":
                     pathToFetch.add("users/" + uid + "/savedAllergicProducts");
+                    text = "No Allergic Products to show";
                     break;
             }
 
@@ -154,7 +158,7 @@
                         if(productList.isEmpty()){
                             rvSaved.setVisibility(View.GONE);
                             tvNoSaved.setVisibility(View.VISIBLE);
-                            tvNoSaved.setText("No Saved Products");
+                            tvNoSaved.setText(text);
                         } else {
                             tvNoSaved.setVisibility(View.GONE);
                             rvSaved.setVisibility(View.VISIBLE);
