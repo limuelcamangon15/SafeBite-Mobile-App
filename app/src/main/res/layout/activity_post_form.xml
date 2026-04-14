@@ -81,13 +81,24 @@
                     android:orientation="vertical"
                     android:padding="16dp">
 
-                    <ImageView
-                        android:id="@+id/ivFoodImage"
+                    <com.google.android.material.card.MaterialCardView
                         android:layout_width="match_parent"
                         android:layout_height="170dp"
-                        android:scaleType="centerCrop"
-                        android:background="@drawable/food_image_placeholder_bg"
-                        android:layout_marginBottom="12dp"/>
+                        android:layout_marginBottom="12dp"
+                        app:cardCornerRadius="16dp"
+                        app:cardElevation="0dp"
+                        app:strokeWidth="0.8dp"
+                        app:cardBackgroundColor="#1AFFFFFF"
+                        app:strokeColor="#15FFFFFF"
+                        >
+
+                        <ImageView
+                            android:id="@+id/foodImageIv"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:scaleType="centerCrop"/>
+
+                    </com.google.android.material.card.MaterialCardView>
 
                     <TextView
                         android:id="@+id/tvFoodTitle"
