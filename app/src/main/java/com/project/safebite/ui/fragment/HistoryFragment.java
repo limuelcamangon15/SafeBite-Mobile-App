@@ -1,13 +1,14 @@
 package com.project.safebite.ui.fragment;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.Spinner;
+import android.view.ViewParent;
+import android.widget.HorizontalScrollView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -17,11 +18,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.database.*;
+
 import com.project.safebite.R;
 import com.project.safebite.adapters.HistoryAdapter;
 import com.project.safebite.adapters.PostAdapter;
@@ -36,218 +34,244 @@ import java.util.List;
 
 public class HistoryFragment extends Fragment {
 
-    public HistoryFragment(){}
-
-    @Override
-    public void onCreate(Bundle savedInstanceState){
-        super.onCreate(savedInstanceState);
-    }
+    private enum Tab { SCANS, POSTS }
 
     private RecyclerView rvHistory, rvPosts;
-
     private HistoryAdapter historyAdapter;
     private PostAdapter postAdapter;
 
-    private List<Product> historyList;
-    private List<Post> postList;
-    FirebaseAuth auth;
-    Spinner spinner;
-    String uid = "";
+    private final List<Product> historyList = new ArrayList<>();
+    private final List<Post> postList = new ArrayList<>();
 
-    NetworkViewModel networkViewModel;
-    boolean isWifiConnected;
-    TextView tvNoHistory;
+    private FirebaseAuth auth;
+    private String uid;
+
+    private NetworkViewModel networkViewModel;
+    private boolean isWifiConnected;
+
+    private TextView tvNoHistory, btnFilterScans, btnFilterPosts;
+    private LinearLayout llFilter;
+
     private ValueEventListener postListener;
     private ValueEventListener scanListener;
+
     private DatabaseReference postRef;
     private DatabaseReference scanRef;
 
+    private Tab currentTab = Tab.SCANS;
+
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.fragment_history, container, false);
-        networkViewModel = new ViewModelProvider(requireActivity()).get(NetworkViewModel.class);
 
-        postList = new ArrayList<>();
-        historyList = new ArrayList<>();
+        networkViewModel = new ViewModelProvider(requireActivity()).get(NetworkViewModel.class);
 
         rvHistory = view.findViewById(R.id.rvHistory);
         rvPosts = view.findViewById(R.id.rvPosts);
-        spinner = view.findViewById(R.id.spFilter);
         tvNoHistory = view.findViewById(R.id.tvNoHistory);
+        btnFilterPosts = view.findViewById(R.id.btnFilterPosts);
+        btnFilterScans = view.findViewById(R.id.btnFilterScans);
+        llFilter = view.findViewById(R.id.llFilter);
 
         auth = FirebaseAuth.getInstance();
 
+        if (auth.getCurrentUser() == null) return view;
+        uid = auth.getCurrentUser().getUid();
+
         rvHistory.setLayoutManager(new LinearLayoutManager(getContext()));
-        rvHistory.setHasFixedSize(true);
         rvPosts.setLayoutManager(new LinearLayoutManager(getContext()));
+
+        rvHistory.setHasFixedSize(true);
         rvPosts.setHasFixedSize(true);
 
-       uid = auth.getCurrentUser().getUid();
+        postAdapter = new PostAdapter(getContext(), postList, view, "history");
+        historyAdapter = new HistoryAdapter(getContext(), historyList);
 
-        List<String> items = new ArrayList<>();
-        items.add("Posts");
-        items.add("Scans");
+        rvPosts.setAdapter(postAdapter);
+        rvHistory.setAdapter(historyAdapter);
 
-        ArrayAdapter<String> spAdapter = new ArrayAdapter<>(
-                requireContext(),
-                android.R.layout.simple_spinner_item,
-                items
-        );
-        spAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinner.setAdapter(spAdapter);
-
-        networkViewModel.getIsConnected().observe(getViewLifecycleOwner(), isConnected->{
+        networkViewModel.getIsConnected().observe(getViewLifecycleOwner(), isConnected -> {
             isWifiConnected = isConnected;
         });
 
-        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String selected = items.get(position);
+        btnFilterScans.setOnClickListener(v -> handleTabClick(Tab.SCANS));
+        btnFilterPosts.setOnClickListener(v -> handleTabClick(Tab.POSTS));
 
-                if(selected.equals("Posts")){
-                    rvHistory.setVisibility(View.GONE);
-                    tvNoHistory.setVisibility(View.GONE);
-                    rvPosts.setVisibility(View.VISIBLE);
-                    renderPosts(uid, view);
-                } else {
-                    rvPosts.setVisibility(View.GONE);
-                    tvNoHistory.setVisibility(View.GONE);
-                    rvHistory.setVisibility(View.VISIBLE);
-                    renderScans(uid);
-                }
-            }
+        handleTabClick(Tab.SCANS);
 
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
-        });
-
-        spinner.setSelection(1);
         return view;
-    }
-    @Override
-    public void onResume() {
-        super.onResume();
-        if (spinner.getSelectedItem().toString().equals("Posts")) {
-            postList.clear();
-            renderPosts(uid, rvPosts);
-        }
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        if (postListener != null && postRef != null) postRef.removeEventListener(postListener);
-        if (scanListener != null && scanRef != null) scanRef.removeEventListener(scanListener);
-    }
 
-    private void renderPosts(String uid, View parent){
+        if (postListener != null && postRef != null) {
+            postRef.removeEventListener(postListener);
+        }
 
         if (scanListener != null && scanRef != null) {
             scanRef.removeEventListener(scanListener);
-            scanListener = null;
         }
-
-        String path = "users/" + uid + "/postList";
-         postRef = FirebaseDatabase.getInstance(DatabaseConstants.DATABASE_URL)
-                .getReference(path);
-
-        postList = new ArrayList<>();
-
-        postAdapter = new PostAdapter(getContext(), postList, parent, "history");
-        rvPosts.setAdapter(postAdapter);
-
-        postListener = new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                postList.clear();
-                int total = (int) snapshot.getChildrenCount();
-
-                if (total == 0 || !isWifiConnected) {
-                    rvPosts.setVisibility(View.GONE);
-                    tvNoHistory.setVisibility(View.VISIBLE);
-                    tvNoHistory.setText("No posts to retrieve");
-                    return;
-                }
-
-                final int[] loadedCount = {0};
-                for(DataSnapshot postSnapshot: snapshot.getChildren()){
-                    String postId = postSnapshot.getKey();
-                    Log.d("post", postId);
-                    FirebaseDatabase.getInstance(DatabaseConstants.DATABASE_URL)
-                            .getReference("posts/" + postId)
-                            .get()
-                            .addOnSuccessListener(postData -> {
-                                Post post = postData.getValue(Post.class);
-                                if (post != null) postList.add(post);
-
-                                loadedCount[0]++;
-                                if (loadedCount[0] == total) {
-                                    postList.sort(Comparator.comparingLong(Post::getPostedAt).reversed());
-                                    tvNoHistory.setVisibility(View.GONE);
-                                    rvPosts.setVisibility(View.VISIBLE);
-                                    postAdapter.notifyDataSetChanged();
-                                }
-                            });
-                }
-            }
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Log.e("RTDB", "Failed to retrieve post history", error.toException());
-            }
-        };
-        postRef.addValueEventListener(postListener);
     }
 
-    private void renderScans(String uid){
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (currentTab == Tab.POSTS) {
+            loadPosts();
+        }
+    }
+
+    private void handleTabClick(Tab tab) {
+        currentTab = tab;
+        updateFilterUI(tab);
+
+        if (tab == Tab.POSTS) {
+            loadPosts();
+        } else {
+            loadScans();
+        }
+    }
+
+    private void updateFilterUI(Tab tab) {
+
+        for (int i = 0; i < llFilter.getChildCount(); i++) {
+            View child = llFilter.getChildAt(i);
+            if (child instanceof TextView) {
+                child.setBackgroundResource(R.drawable.filter_bg);
+                ((TextView) child).setTextColor(Color.parseColor("#3b6d11"));
+            }
+        }
+
+        TextView active = (tab == Tab.POSTS) ? btnFilterPosts : btnFilterScans;
+
+        active.setBackgroundResource(R.drawable.filter_bg_active);
+        active.setTextColor(Color.parseColor("#A4C639"));
+
+        llFilter.removeView(active);
+        llFilter.addView(active, 0);
+
+        ViewParent parent = llFilter.getParent();
+        if (parent instanceof HorizontalScrollView) {
+            ((HorizontalScrollView) parent).smoothScrollTo(0, 0);
+        }
+    }
+
+    private void showEmpty(String message) {
+        tvNoHistory.setVisibility(View.VISIBLE);
+        tvNoHistory.setText(message);
+        rvHistory.setVisibility(View.GONE);
+        rvPosts.setVisibility(View.GONE);
+    }
+
+    private void loadScans() {
 
         if (postListener != null && postRef != null) {
             postRef.removeEventListener(postListener);
             postListener = null;
         }
 
-        String path = "users/" + uid + "/scanHistory";
         scanRef = FirebaseDatabase.getInstance(DatabaseConstants.DATABASE_URL)
-                .getReference(path);
+                .getReference("users/" + uid + "/scanHistory");
 
-        historyList = new ArrayList<>();
-
-        historyAdapter = new HistoryAdapter(getContext(), historyList);
-        rvHistory.setAdapter(historyAdapter);
-
-        scanListener = new ValueEventListener(){
+        scanListener = new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
+
                 historyList.clear();
-                for(DataSnapshot historySnapshot: snapshot.getChildren()){
-                    Product product = historySnapshot.getValue(Product.class);
-                    if(product!=null)historyList.add(product);
+
+                for (DataSnapshot s : snapshot.getChildren()) {
+                    Product p = s.getValue(Product.class);
+                    if (p != null) historyList.add(p);
                 }
 
                 if (historyList.isEmpty()) {
-                    rvHistory.setVisibility(View.GONE);
-                    tvNoHistory.setVisibility(View.VISIBLE);
-                    tvNoHistory.setText("No scans to retrieve");
-                } else {
-                    tvNoHistory.setVisibility(View.GONE);
-                    rvHistory.setVisibility(View.VISIBLE);
-                    historyList.sort(Comparator.comparingLong(Product::getTimestamp).reversed());
-                    if (historyList.size() > 15) {
-                        historyList = historyList.subList(0, 15);
-                    }
-                    historyAdapter.notifyDataSetChanged();
+                    showEmpty("No scans to retrieve");
+                    return;
                 }
+
+                historyList.sort(Comparator.comparingLong(Product::getTimestamp).reversed());
+
+                if (historyList.size() > 15) {
+                    historyList.subList(15, historyList.size()).clear();
+                }
+
+                rvHistory.setVisibility(View.VISIBLE);
+                rvPosts.setVisibility(View.GONE);
+                tvNoHistory.setVisibility(View.GONE);
+
+                historyAdapter.notifyDataSetChanged();
             }
+
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Log.e("RTDB", "Failed to retrieve scan history", error.toException());
+                Log.e("RTDB", "Scan load failed", error.toException());
             }
         };
 
         scanRef.addValueEventListener(scanListener);
+    }
 
+    private void loadPosts() {
+
+        if (scanListener != null && scanRef != null) {
+            scanRef.removeEventListener(scanListener);
+            scanListener = null;
+        }
+
+        postRef = FirebaseDatabase.getInstance(DatabaseConstants.DATABASE_URL)
+                .getReference("users/" + uid + "/postList");
+
+        postListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+
+                postList.clear();
+
+                int total = (int) snapshot.getChildrenCount();
+                if (total == 0 || !isWifiConnected) {
+                    showEmpty("No posts to retrieve");
+                    return;
+                }
+
+                final int[] loaded = {0};
+
+                for (DataSnapshot snap : snapshot.getChildren()) {
+
+                    String postId = snap.getKey();
+
+                    FirebaseDatabase.getInstance(DatabaseConstants.DATABASE_URL)
+                            .getReference("posts/" + postId)
+                            .get()
+                            .addOnSuccessListener(task -> {
+
+                                Post post = task.getValue(Post.class);
+                                if (post != null) postList.add(post);
+
+                                loaded[0]++;
+
+                                if (loaded[0] == total) {
+
+                                    postList.sort(Comparator.comparingLong(Post::getPostedAt).reversed());
+
+                                    rvPosts.setVisibility(View.VISIBLE);
+                                    rvHistory.setVisibility(View.GONE);
+                                    tvNoHistory.setVisibility(View.GONE);
+
+                                    postAdapter.notifyDataSetChanged();
+                                }
+                            });
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("RTDB", "Post load failed", error.toException());
+            }
+        };
+
+        postRef.addValueEventListener(postListener);
     }
 }

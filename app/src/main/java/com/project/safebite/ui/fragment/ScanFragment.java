@@ -7,6 +7,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.media.Image;
 import android.os.Build;
 import android.os.Bundle;
@@ -37,6 +38,7 @@ import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -51,6 +53,8 @@ import com.android.volley.TimeoutError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.bumptech.glide.Glide;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputEditText;
@@ -93,21 +97,23 @@ import java.util.concurrent.Executors;
 public class ScanFragment extends Fragment {
 
     Context context;
-    View parent;
+    View parent, vLine;
     MaterialButton btnScan, btnPost;
     TextInputEditText etBarcode;
     TextView tvName, tvBrand, tvAllergens, tvNutrimentsAnalysis, tvAltProducts;
     ImageView ivImage ;
-    ImageButton ibBookmark;
+    ImageButton ibSave, ibAllergic;
     PreviewView pvScanner;
     BarcodeScanner barcodeScanner;
     RecyclerView rvProduct;
     FirebaseAuth auth;
+    LinearLayout bannerAllergic;
     private RecommendedProductAdapter rpAdapter;
     private ProcessCameraProvider cameraProvider;
     private static final int CAMERA_PERMISSION_CODE = 100;
     private List<Product> recommendations = new ArrayList<>();
     private boolean isProductSaved = false;
+    private boolean isAllergic = false;
     private String uid = null;
     String name="", brand="", nutrimentAnalysis="", imageUrl="", nutriscoreGrade = "";
     List <String> allergenList = null;
@@ -259,9 +265,12 @@ public class ScanFragment extends Fragment {
         tvNutrimentsAnalysis = view.findViewById(R.id.tvNutrimentsAnalysis);
         tvAltProducts = view.findViewById(R.id.tvAltProducts);
         ivImage = view.findViewById(R.id.ivImage);
-        ibBookmark  = view.findViewById(R.id.ibBookmark);
+        ibSave  = view.findViewById(R.id.ibSave);
+        ibAllergic = view.findViewById(R.id.ibAllergic);
         pvScanner = view.findViewById(R.id.pvScanner);
         btnPost = view.findViewById(R.id.btnPost);
+        bannerAllergic = view.findViewById(R.id.bannerAllergic);
+        vLine = view.findViewById(R.id.vLine);
 
         if (FuncUtil.isConnected(context)) {
             uid = auth.getCurrentUser() != null ? auth.getCurrentUser().getUid() : offlineAuth.getUserId();
@@ -300,7 +309,8 @@ public class ScanFragment extends Fragment {
 
         btnScan.setOnClickListener(v -> askCameraPermission());
         btnPost.setOnClickListener(v -> openPostForm());
-        ibBookmark.setOnClickListener(v -> saveScan());
+        ibSave.setOnClickListener(v -> saveScan());
+        ibAllergic.setOnClickListener(v-> flagAsAllergic());
 
         etBarcode.setOnEditorActionListener((v, actionId, event) -> {
             if(actionId == EditorInfo.IME_ACTION_SEARCH ||
@@ -350,31 +360,72 @@ public class ScanFragment extends Fragment {
                 .override(300,300)
                 .into(ivImage);
 
+        ibSave.setImageResource(R.drawable.bookmark_24px);
+        ibSave.setBackgroundResource(R.drawable.rounded_bg_green);
+        ibAllergic.setBackgroundResource(R.drawable.rounded_bg_red);
+        ibAllergic.setImageResource(R.drawable.warning_24px);
+        ibAllergic.setColorFilter(Color.parseColor("#E24B4A"));
+
         tvName.setText(name);
         tvBrand.setText(brand);
         tvAllergens.setText(android.text.TextUtils.join("\n", allergens));
         tvNutrimentsAnalysis.setText(nutrimentAnalysis);
-        ibBookmark.setVisibility(View.VISIBLE);
+        ibSave.setVisibility(View.VISIBLE);
+        ibAllergic.setVisibility(View.VISIBLE);
+        vLine.setVisibility(View.VISIBLE);
 
-        String path = "users/" + uid + "/savedProducts";
-        DatabaseReference userRef = FirebaseDatabase.getInstance(DatabaseConstants.DATABASE_URL).getReference(path);
-        userRef.child(barcode).get().addOnSuccessListener(snapshot -> {
-            if(snapshot.exists()){
-                isProductSaved = true;
-                ibBookmark.setBackgroundResource(R.drawable.bookmark_solid);
-            } else {
-                isProductSaved = false;
-                ibBookmark.setBackgroundResource(R.drawable.bookmark_regular);
-            }
-        });
+        String savedPath = "users/" + uid + "/savedProducts";
+        String allergicPath = "users/" + uid + "/savedAllergicProducts";
+        DatabaseReference savedRef = FirebaseDatabase.getInstance(DatabaseConstants.DATABASE_URL).getReference(savedPath);
+        DatabaseReference allergicRef = FirebaseDatabase.getInstance(DatabaseConstants.DATABASE_URL).getReference(allergicPath);
+
+        Task<DataSnapshot> savedTask = savedRef.child(barcode).get();
+        Task<DataSnapshot> allergicTask = allergicRef.child(barcode).get();
+
+        Tasks.whenAllSuccess(savedTask, allergicTask)
+                .addOnSuccessListener(results ->{
+                    DataSnapshot savedSnapshot = (DataSnapshot) results.get(0);
+                    DataSnapshot allergicSnapshot = (DataSnapshot) results.get(1);
+
+                    isProductSaved = savedSnapshot.exists();
+                    if(isProductSaved){
+                        ibSave.setImageResource(R.drawable.bookmark_check_24px);
+                        ibSave.setBackgroundResource(R.drawable.rounded_bg_green_active);
+                    }else{
+                        ibSave.setImageResource(R.drawable.bookmark_24px);
+                        ibSave.setBackgroundResource(R.drawable.rounded_bg_green);
+                    }
+
+                    isAllergic = allergicSnapshot.exists();
+                    if(isAllergic){
+                        ibAllergic.setImageResource(R.drawable.warning_24px);
+                        ibAllergic.setColorFilter(Color.parseColor("#E24B4A"));
+                        ibAllergic.setBackgroundResource(R.drawable.rounded_bg_red_active);
+                        bannerAllergic.setVisibility(View.VISIBLE);
+                    }else{
+                        ibAllergic.setImageResource(R.drawable.warning_24px);
+                        ibAllergic.setColorFilter(Color.parseColor("#E24B4A"));
+                        ibAllergic.setBackgroundResource(R.drawable.rounded_bg_red);
+                        bannerAllergic.setVisibility(View.GONE);
+                    }
+
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("ProductCheck", "Failed to fetch product states", e);
+                });
+
 
         if(!isWifiConnected){
             tvAltProducts.setVisibility(View.GONE);
             rvProduct.setVisibility(View.GONE);
+        }else{
+            tvAltProducts.setVisibility(View.VISIBLE);
+            rvProduct.setVisibility(View.VISIBLE);
         }
     }
 
     private void checkAllergens(List<String> productAllergens, List<String> userAllergies){
+        tvAllergens.setTextColor(ContextCompat.getColor(context, R.color.white));
         if(!productAllergens.isEmpty() && !userAllergies.isEmpty()){
             boolean allergenMatched = !Collections.disjoint(
                     userAllergies.stream().map(String::toLowerCase).collect(java.util.stream.Collectors.toList()),
@@ -648,17 +699,66 @@ public class ScanFragment extends Fragment {
 
             userRef.child(barcode).setValue(savedProduct);
             UIUtil.showSnackbar(parent, "Product Saved!");
-            ibBookmark.setBackgroundResource(R.drawable.bookmark_solid);
+            ibSave.setImageResource(R.drawable.bookmark_check_24px);
+            ibSave.setColorFilter(Color.parseColor("#639922"));
+            ibSave.setBackgroundResource(R.drawable.rounded_bg_green_active);
         }
         else{
             userRef.child(barcode).removeValue();
             UIUtil.showSnackbar(parent, "Product Unsaved!");
-            ibBookmark.setBackgroundResource(R.drawable.bookmark_regular);
+            ibSave.setImageResource(R.drawable.bookmark_24px);
+            ibSave.setColorFilter(Color.parseColor("#639922"));
+            ibSave.setBackgroundResource(R.drawable.rounded_bg_green);
         }
 
         userRef.keepSynced(true);
 
     }
+
+
+    private void flagAsAllergic(){
+        isAllergic = !isAllergic;
+
+        String path = "users/" + uid + "/savedAllergicProducts";
+        String barcode = etBarcode.getText().toString();
+        String nutrimentAnalysis = tvNutrimentsAnalysis.getText().toString();
+
+        DatabaseReference userRef = FirebaseDatabase.getInstance(DatabaseConstants.DATABASE_URL).getReference(path);
+
+        if(isAllergic){
+
+            Product savedProduct = new Product(
+                    imageUrl,
+                    name,
+                    brand,
+                    allergenList,
+                    barcode,
+                    nutriscoreGrade,
+                    System.currentTimeMillis(),
+                    nutrimentAnalysis,
+                    category
+            );
+
+            userRef.child(barcode).setValue(savedProduct);
+
+            ibAllergic.setImageResource(R.drawable.warning_24px);
+            ibAllergic.setColorFilter(Color.parseColor("#E24B4A"));
+            ibAllergic.setBackgroundResource(R.drawable.rounded_bg_red_active);
+            bannerAllergic.setVisibility(View.VISIBLE);
+            UIUtil.showSnackbar(parent, "Product Marked as Allergic!");
+        }else{
+            userRef.child(barcode).removeValue();
+
+            ibAllergic.setImageResource(R.drawable.warning_24px);
+            ibAllergic.setColorFilter(Color.parseColor("#E24B4A"));
+            ibAllergic.setBackgroundResource(R.drawable.rounded_bg_red);
+            bannerAllergic.setVisibility(View.GONE);
+            UIUtil.showSnackbar(parent, "Product Unmarked as Allergic!");
+        }
+
+        userRef.keepSynced(true);
+    }
+
 
     private void fetchAlternatives(String category, String originalScore, List<String> userAllergens){
         Log.d("HELLO", "im here");
@@ -719,9 +819,24 @@ public class ScanFragment extends Fragment {
                     }
                 },
                 error -> {
-                    UIUtil.showSnackbar(parent, "Failed to fetch recommendations");
-                }) {
-        };
+                    if (error instanceof TimeoutError || error instanceof NoConnectionError) {
+                        UIUtil.showSnackbar(parent, "Check your internet connection");
+                    } else if (error instanceof AuthFailureError) {
+                        UIUtil.showSnackbar(parent, "Authentication failed");
+                    } else if (error instanceof ServerError) {
+                        if (error.networkResponse != null && error.networkResponse.statusCode == 404) {
+                            UIUtil.showSnackbar(parent, "Product not found");
+                            return;
+                        }
+                        UIUtil.showSnackbar(parent, "Server error, please try again later");
+                    } else if (error instanceof Network) {
+                        UIUtil.showSnackbar(parent, "Network error, please try again");
+                    } else if (error instanceof ParseError) {
+                        UIUtil.showSnackbar(parent, "Failed to read server response");
+                    } else {
+                        UIUtil.showSnackbar(parent, "Unexpected error: " + error.toString());
+                    }
+                });
 
         r.add(request);
     }

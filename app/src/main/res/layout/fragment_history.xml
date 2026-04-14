@@ -23,33 +23,52 @@
             android:padding="10dp"
             />
 
-        <LinearLayout
+        <HorizontalScrollView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_weight="1"
+            android:scrollbars="none">
+            <LinearLayout
+                android:id="@+id/llFilter"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Filter By: "
-                android:textSize="15sp"
-                android:textColor="@color/white"
-                android:textStyle="bold"
-                android:padding="2dp"
-                />
-            <Space
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="2"
-                />
+                android:padding="10dp"
+                android:orientation="horizontal"
+                android:animateLayoutChanges="true"
+                >
 
-            <Spinner
-                android:id="@+id/spFilter"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent" />
+                <TextView
+                    android:id="@+id/btnFilterScans"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:background="@drawable/filter_bg_active"
+                    android:paddingLeft="10dp"
+                    android:paddingTop="5dp"
+                    android:paddingRight="10dp"
+                    android:paddingBottom="5dp"
+                    android:text="Scans"
+                    android:textColor="#A4C639"
 
-        </LinearLayout>
+                    />
+
+                <TextView
+                    android:id="@+id/btnFilterPosts"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Posts"
+                    android:textColor="#3b6d11"
+                    android:background="@drawable/filter_bg"
+                    android:layout_marginEnd="8dp"
+                    android:paddingTop="5dp"
+                    android:paddingBottom="5dp"
+                    android:paddingLeft="10dp"
+                    android:paddingRight="10dp"
+                    />
+
+
+            </LinearLayout>
+
+        </HorizontalScrollView>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvHistory"

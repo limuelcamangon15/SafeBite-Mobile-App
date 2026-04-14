@@ -186,55 +186,65 @@
             >
 
             <!-- Notice Box -->
-            <com.google.android.material.card.MaterialCardView
+            <LinearLayout
                 android:layout_width="0dp"
                 android:layout_weight="7"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="0dp"
-                app:strokeWidth="1dp"
-                app:strokeColor="#20FFFFFF"
-                android:backgroundTint="#14928E8E">
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingTop="16dp"
+                android:paddingBottom="16dp"
+                android:layout_marginLeft="5dp"
+                android:layout_marginRight="5dp">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_marginEnd="12dp"
+                    android:alpha="0.8"
+                    android:src="@drawable/info_icon"
+                    app:tint="@color/white" />
+
+                <TextView
+                    android:layout_width="181dp"
                     android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:padding="16dp">
+                    android:layout_weight="1"
+                    android:alpha="0.9"
+                    android:text="Always verify allergen information on the product packaging."
+                    android:textColor="@color/white"
+                    android:textSize="14sp" />
+            </LinearLayout>
 
-                    <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:layout_marginEnd="12dp"
-                        android:alpha="0.8"
-                        android:src="@drawable/info_icon"
-                        app:tint="@color/white" />
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:alpha="0.9"
-                        android:text="Always verify allergen information on the product packaging."
-                        android:textColor="@color/white"
-                        android:textSize="14sp" />
-                </LinearLayout>
-
-            </com.google.android.material.card.MaterialCardView>
+            <View
+                android:layout_width="1dp"
+                android:layout_height="28dp"
+                android:background="#333333"
+                android:layout_gravity="center"
+                />
 
             <ImageButton
-                android:id="@+id/ibBookmark"
-                android:layout_marginTop="5dp"
-                android:layout_weight="1"
-                android:layout_width="0dp"
-                android:layout_height="50dp"
-                android:scaleType="centerInside"
-                android:background="@drawable/bookmark_regular"
+                android:id="@+id/ibSave"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:src="@drawable/bookmark_24px"
+                app:tint="#639922"
+                android:background="@drawable/rounded_bg_green"
                 android:padding="8dp"
-                android:layout_gravity="center_vertical"
-                android:visibility="gone"
+                android:layout_marginLeft="5dp"
+                android:layout_gravity="center"
+                />
+
+
+            <ImageButton
+                android:id="@+id/ibAllergic"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:src="@drawable/warning_24px"
+                app:tint="#E24B4A"
+                android:background="@drawable/rounded_bg_red"
+                android:padding="8dp"
+                android:layout_marginLeft="5dp"
+                android:layout_gravity="center"
                 />
 
         </LinearLayout>

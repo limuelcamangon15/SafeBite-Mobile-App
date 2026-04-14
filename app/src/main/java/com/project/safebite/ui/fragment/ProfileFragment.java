@@ -34,7 +34,9 @@ import com.project.safebite.ui.activity.WebViewActivity;
 import com.project.safebite.utils.UIUtil;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ProfileFragment extends Fragment {
 
@@ -207,6 +209,7 @@ public class ProfileFragment extends Fragment {
         if(!fullName.trim().equals("")) {
             // ref/fullName
             ref.child("fullName").setValue(fullName);
+            updateNamesOnPosts(fullName, uid);
             ref.child("fullName").keepSynced(true);
         }
 
@@ -275,4 +278,40 @@ public class ProfileFragment extends Fragment {
         Intent intent = new Intent(requireActivity(), AboutActivity.class);
         startActivity(intent);
     }
+
+    private void updateNamesOnPosts(String name, String uid){
+        DatabaseReference rootRef = FirebaseDatabase
+                .getInstance(DatabaseConstants.DATABASE_URL)
+                .getReference();
+
+        rootRef.child("users").child(uid).child("postList")
+                .get()
+                .addOnSuccessListener(dataSnapshot -> {
+                    if(!dataSnapshot.exists())return;
+
+                    Map<String, Object> updateRef = new HashMap<>();
+
+                    for(DataSnapshot postSnapshot: dataSnapshot.getChildren()){
+                        String postId = postSnapshot.getKey();
+                        updateRef.put("posts/" + postId + "/username", name);
+                        Log.d("Hello", "Im here");
+                        Log.d("id", postId);
+                    }
+
+                    rootRef.updateChildren(updateRef)
+                            .addOnSuccessListener(unused -> {
+                                Log.d("UpdateName", "All posts updated successfully");
+                            })
+                            .addOnFailureListener(e -> {
+                                Log.e("UpdateName", "Failed to update posts", e);
+                            });
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("UpdateName", "Failed to fetch post list", e);
+                });
+
+        rootRef.keepSynced(true);
+    }
+
+
 }

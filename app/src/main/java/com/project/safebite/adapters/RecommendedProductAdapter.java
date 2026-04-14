@@ -1,6 +1,8 @@
 package com.project.safebite.adapters;
 
 import android.content.Context;
+import android.graphics.Color;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,7 +15,10 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.project.safebite.R;
@@ -30,6 +35,7 @@ public class RecommendedProductAdapter extends RecyclerView.Adapter<RecommendedP
     private List<Product> productList;
     private Context context;
     private boolean isProductSaved = false;
+    private boolean isAllergic = false;
     private FirebaseAuth auth;
     private View parent;
     String uid = null;
@@ -56,8 +62,17 @@ public class RecommendedProductAdapter extends RecyclerView.Adapter<RecommendedP
         // logic
 
         Product product = productList.get(position);
-        String path = "users/" + uid + "/savedProducts";
-        DatabaseReference userRef = FirebaseDatabase.getInstance(DatabaseConstants.DATABASE_URL).getReference(path);
+
+        holder.ibSave.setImageResource(R.drawable.bookmark_24px);
+        holder.ibSave.setBackgroundResource(R.drawable.rounded_bg_green);
+        holder.ibAllergic.setBackgroundResource(R.drawable.rounded_bg_red);
+        holder.ibAllergic.setImageResource(R.drawable.warning_24px);
+        holder.ibAllergic.setColorFilter(Color.parseColor("#E24B4A"));
+
+        String savedPath = "users/" + uid + "/savedProducts";
+        String allergicPath = "users/" + uid + "/savedAllergicProducts";
+        DatabaseReference savedRef = FirebaseDatabase.getInstance(DatabaseConstants.DATABASE_URL).getReference(savedPath);
+        DatabaseReference allergicRef = FirebaseDatabase.getInstance(DatabaseConstants.DATABASE_URL).getReference(allergicPath);
         String imageUrl = product.getImageUrl();
         if(imageUrl != null && !imageUrl.isEmpty()){
             Glide.with(context)
@@ -74,18 +89,41 @@ public class RecommendedProductAdapter extends RecyclerView.Adapter<RecommendedP
         holder.tvBrand.setText(product.getBrand());
         holder.tvAllergens.setText(android.text.TextUtils.join("\n", product.getAllergens()));
         holder.tvNutrimentAnalysis.setText(product.getNutrimentsAnalysis());
-        holder.ibBookmark.setVisibility(View.VISIBLE);
-        holder.ibBookmark.setOnClickListener(v->saveProduct(product, holder.ibBookmark));
+        holder.ibSave.setOnClickListener(v->saveProduct(product, holder.ibSave));
+        holder.ibAllergic.setOnClickListener(v->flagAsAllergic(product, holder.ibAllergic));
 
-        userRef.child(product.getBarcode()).get().addOnSuccessListener(snapshot -> {
-            if(snapshot.exists()){
-                isProductSaved = true;
-                holder.ibBookmark.setBackgroundResource(R.drawable.bookmark_solid);
-            } else {
-                isProductSaved = false;
-               holder.ibBookmark.setBackgroundResource(R.drawable.bookmark_regular);
-            }
-        });
+        Task<DataSnapshot> savedTask = savedRef.child(product.getBarcode()).get();
+        Task<DataSnapshot> allergicTask = allergicRef.child(product.getBarcode()).get();
+
+        Tasks.whenAllSuccess(savedTask, allergicTask)
+                .addOnSuccessListener(results ->{
+                    DataSnapshot savedSnapshot = (DataSnapshot) results.get(0);
+                    DataSnapshot allergicSnapshot = (DataSnapshot) results.get(1);
+
+                    isProductSaved = savedSnapshot.exists();
+                    if(isProductSaved){
+                        holder.ibSave.setImageResource(R.drawable.bookmark_check_24px);
+                        holder.ibSave.setBackgroundResource(R.drawable.rounded_bg_green_active);
+                    }else{
+                        holder.ibSave.setImageResource(R.drawable.bookmark_24px);
+                        holder.ibSave.setBackgroundResource(R.drawable.rounded_bg_green);
+                    }
+
+                    isAllergic = allergicSnapshot.exists();
+                    if(isAllergic){
+                        holder.ibAllergic.setImageResource(R.drawable.warning_24px);
+                        holder.ibAllergic.setColorFilter(Color.parseColor("#E24B4A"));
+                        holder.ibAllergic.setBackgroundResource(R.drawable.rounded_bg_red_active);
+                    }else{
+                        holder.ibAllergic.setImageResource(R.drawable.warning_24px);
+                        holder.ibAllergic.setColorFilter(Color.parseColor("#E24B4A"));
+                        holder.ibAllergic.setBackgroundResource(R.drawable.rounded_bg_red);
+                    }
+
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("ProductCheck", "Failed to fetch product states", e);
+                });
 
         checkAllergens(product.getAllergens(), userAllergen, holder.tvAllergens);
 
@@ -107,22 +145,54 @@ public class RecommendedProductAdapter extends RecyclerView.Adapter<RecommendedP
         DatabaseReference userRef = FirebaseDatabase.getInstance(DatabaseConstants.DATABASE_URL).getReference(path);
 
         if(isProductSaved){
-;
             userRef.child(barcode).setValue(savedProduct);
             UIUtil.showSnackbar(parent, "Product Saved!");
-            ibBookmark.setBackgroundResource(R.drawable.bookmark_solid);
+            ibBookmark.setImageResource(R.drawable.bookmark_check_24px);
+            ibBookmark.setColorFilter(Color.parseColor("#639922"));
+            ibBookmark.setBackgroundResource(R.drawable.rounded_bg_green_active);
         }
         else{
             userRef.child(barcode).removeValue();
             UIUtil.showSnackbar(parent, "Product Unsaved!");
-            ibBookmark.setBackgroundResource(R.drawable.bookmark_regular);
+            ibBookmark.setImageResource(R.drawable.bookmark_24px);
+            ibBookmark.setColorFilter(Color.parseColor("#639922"));
+            ibBookmark.setBackgroundResource(R.drawable.rounded_bg_green);
         }
 
         userRef.keepSynced(true);
 
     }
 
+    private void flagAsAllergic(Product flaggedProduct, ImageButton ibAllergic){
+        isAllergic = !isAllergic;
+
+        String path = "users/" + uid + "/savedAllergicProducts";
+        String barcode = flaggedProduct.getBarcode();
+
+        DatabaseReference userRef = FirebaseDatabase.getInstance(DatabaseConstants.DATABASE_URL).getReference(path);
+
+        if(isAllergic){
+
+            userRef.child(barcode).setValue(flaggedProduct);
+
+            ibAllergic.setImageResource(R.drawable.warning_24px);
+            ibAllergic.setColorFilter(Color.parseColor("#E24B4A"));
+            ibAllergic.setBackgroundResource(R.drawable.rounded_bg_red_active);
+            UIUtil.showSnackbar(parent, "Product Marked as Allergic!");
+        }else{
+            userRef.child(barcode).removeValue();
+
+            ibAllergic.setImageResource(R.drawable.warning_24px);
+            ibAllergic.setColorFilter(Color.parseColor("#E24B4A"));
+            ibAllergic.setBackgroundResource(R.drawable.rounded_bg_red);
+            UIUtil.showSnackbar(parent, "Product Unmarked as Allergic!");
+        }
+
+        userRef.keepSynced(true);
+    }
+
     private void checkAllergens(List<String> productAllergens, List<String> userAllergies, TextView tvAllergens){
+        tvAllergens.setTextColor(ContextCompat.getColor(context, R.color.white));
         if(!productAllergens.isEmpty() && !userAllergies.isEmpty()){
             boolean allergenMatched = !Collections.disjoint(
                     userAllergies.stream().map(String::toLowerCase).collect(java.util.stream.Collectors.toList()),
@@ -138,7 +208,7 @@ public class RecommendedProductAdapter extends RecyclerView.Adapter<RecommendedP
 
         TextView tvAllergens, tvBrand, tvName, tvNutrimentAnalysis;
         ImageView ivImage;
-        ImageButton ibBookmark;
+        ImageButton ibSave, ibAllergic;
 
         public RecommendedViewHolder(@NonNull View foodView){
             super(foodView);
@@ -147,7 +217,8 @@ public class RecommendedProductAdapter extends RecyclerView.Adapter<RecommendedP
             tvName = foodView.findViewById(R.id.tvName);
             tvNutrimentAnalysis = foodView.findViewById(R.id.tvNutrimentsAnalysis);
             ivImage = foodView.findViewById(R.id.ivImage);
-            ibBookmark = foodView.findViewById(R.id.ibBookmark);
+            ibSave = foodView.findViewById(R.id.ibSave);
+            ibAllergic = foodView.findViewById(R.id.ibAllergic);
         }
     }
 

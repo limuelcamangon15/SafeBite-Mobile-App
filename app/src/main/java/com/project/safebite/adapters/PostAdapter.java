@@ -177,6 +177,9 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
 
     }
 
+
+
+
     private void deletePost(String postId){
         String userPath = "users/" + uid +"/postList/" + postId;
         String postPath = "posts/" + postId;
