@@ -44,7 +44,7 @@
                     android:id="@+id/userIconIv"
                     android:layout_width="44dp"
                     android:layout_height="44dp"
-                    android:src="@drawable/user_img"
+                    android:src="@drawable/usericon"
                     android:scaleType="centerCrop"
                     android:background="@drawable/circle_bg"
                     android:clipToOutline="true"
