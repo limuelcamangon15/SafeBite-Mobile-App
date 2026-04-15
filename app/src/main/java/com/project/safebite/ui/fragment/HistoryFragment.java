@@ -188,7 +188,7 @@ public class HistoryFragment extends Fragment {
                 }
 
                 if (historyList.isEmpty()) {
-                    showEmpty("No scans to retrieve");
+                    showEmpty("No scans to show");
                     return;
                 }
 
@@ -232,7 +232,7 @@ public class HistoryFragment extends Fragment {
 
                 int total = (int) snapshot.getChildrenCount();
                 if (total == 0 || !isWifiConnected) {
-                    showEmpty("No posts to retrieve");
+                    showEmpty("No posts to show");
                     return;
                 }
 

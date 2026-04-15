@@ -112,7 +112,7 @@ public class HomeFragment extends Fragment {
                 uid = offlineAuth.getUserId();
                 recyclerView.setVisibility(View.GONE);
                 tvNoFeed.setVisibility(View.VISIBLE);
-                tvNoFeed.setText("No posts to retrieve");
+                tvNoFeed.setText("No posts to show");
             }
         });
 
