@@ -2,6 +2,8 @@ package com.project.safebite.ui.fragment;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,13 +13,17 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.checkbox.MaterialCheckBox;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.Firebase;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -25,6 +31,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.project.safebite.R;
 import com.project.safebite.constants.DatabaseConstants;
+import com.project.safebite.model.NetworkViewModel;
 import com.project.safebite.model.User;
 import com.project.safebite.offlineAuth.AuthStorage;
 import com.project.safebite.ui.activity.AboutActivity;
@@ -43,15 +50,19 @@ public class ProfileFragment extends Fragment {
     private FirebaseDatabase database;
     private DatabaseReference ref;
     private FirebaseAuth auth;
-    private TextInputEditText etFullName;
+    private TextInputEditText etFullName, etNewPassword, etConfirmNewPassword, etOldPassword;
 
-    private TextView tvEmail;
-    private MaterialButton btnEdit, btnSave, btnAbout, btnTermsAndConditions, btnVisitWebsite, btnLogOut;
+    View vLine;
+    private TextView tvEmail, tvChangePassword;
+    private MaterialButton btnEdit, btnSave, btnAbout, btnTermsAndConditions, btnVisitWebsite, btnLogOut, btnChangePassword;
+    private TextInputLayout tilOldPassword, tilNewPassword, tilConfirmNewPassword;
 
     private MaterialCheckBox cbMilk, cbEggs, cbPeanuts, cbTreeNuts,
-            cbSoy, cbWheat, cbFish, cbShellfish, cbSesame;
+            cbSoy, cbWheat, cbFish, cbShellfish, cbSesame, cbGluten;
 
     private MaterialCardView mcvAbout, mcvTermsAndConditions, mcvVisitWebsite;
+    private boolean isWifiConnected;
+    NetworkViewModel networkViewModel;
 
     public ProfileFragment() {
         // Required empty public constructor
@@ -74,8 +85,17 @@ public class ProfileFragment extends Fragment {
         ref = database.getReference("users").child(auth.getCurrentUser().getUid());
 
         etFullName = view.findViewById(R.id.etFullName);
+        etNewPassword = view.findViewById(R.id.etNewPassword);
+        etConfirmNewPassword = view.findViewById(R.id.etConfirmNewPassword);
+        etOldPassword = view.findViewById(R.id.etOldPassword);
+        tilNewPassword = view.findViewById(R.id.tilNewPassword);
+        tilOldPassword = view.findViewById(R.id.tilOldPassword);
+        tilConfirmNewPassword = view.findViewById(R.id.tilConfirmNewPassword);
         tvEmail = view.findViewById(R.id.tvEmail);
+        tvChangePassword = view.findViewById(R.id.tvChangePassword);
+        vLine = view.findViewById(R.id.vLine);
 
+        btnChangePassword = view.findViewById(R.id.btnChangePassword);
         btnEdit = view.findViewById(R.id.btnEdit);
         btnSave = view.findViewById(R.id.btnSave);
         btnLogOut = view.findViewById(R.id.btnLogOut);
@@ -89,10 +109,12 @@ public class ProfileFragment extends Fragment {
         cbFish = view.findViewById(R.id.cbFish);
         cbShellfish = view.findViewById(R.id.cbShellfish);
         cbSesame = view.findViewById(R.id.cbSesame);
+        cbGluten = view.findViewById(R.id.cbGluten);
 
         mcvAbout = view.findViewById(R.id.mcvAbout);
         mcvTermsAndConditions = view.findViewById(R.id.mcvTermsAndConditions);
         mcvVisitWebsite = view.findViewById(R.id.mcvVisitWebsite);
+        networkViewModel = new ViewModelProvider(requireActivity()).get(NetworkViewModel.class);
 
         btnAbout = view.findViewById(R.id.btnAbout);
         btnTermsAndConditions = view.findViewById(R.id.btnTermsAndConditions);
@@ -100,6 +122,10 @@ public class ProfileFragment extends Fragment {
 
         // Load profile
         loadProfileData();
+        setRealTimeEditTextListener();
+
+        networkViewModel.getIsConnected().observe(getViewLifecycleOwner(), isConnected->{
+            isWifiConnected = isConnected;});
 
         btnEdit.setOnClickListener(v -> enableEditing());
         btnSave.setOnClickListener(v -> saveProfile());
@@ -112,6 +138,10 @@ public class ProfileFragment extends Fragment {
         btnAbout.setOnClickListener(v -> displayAbout());
         btnTermsAndConditions.setOnClickListener(v -> displayTermsAndConditions());
         btnVisitWebsite.setOnClickListener(v -> displayWebsite());
+        btnChangePassword.setOnClickListener(v->updatePassword(etNewPassword.getText().toString(),
+                etConfirmNewPassword.getText().toString(),
+                etOldPassword.getText().toString()
+        ));
     }
 
     private void loadProfileData() {
@@ -158,16 +188,174 @@ public class ProfileFragment extends Fragment {
         });
 
         // Disable editing initially
+        clearPasswordFields();
         setCheckboxesEnabled(false);
         etFullName.setEnabled(false);
+        etNewPassword.setEnabled(false);
+        etConfirmNewPassword.setEnabled(false);
+        etOldPassword.setEnabled(false);
+        tilOldPassword.setVisibility(View.GONE);
+        tilNewPassword.setVisibility(View.GONE);
+        tilConfirmNewPassword.setVisibility(View.GONE);
+        vLine.setVisibility(View.GONE);
+        tvChangePassword.setVisibility(View.GONE);
+        btnChangePassword.setVisibility(View.GONE);
     }
 
     private void enableEditing() {
+        vLine.setVisibility(View.VISIBLE);
+        tvChangePassword.setVisibility(View.VISIBLE);
+        tilOldPassword.setVisibility(View.VISIBLE);
+        tilNewPassword.setVisibility(View.VISIBLE);
+        tilConfirmNewPassword.setVisibility(View.VISIBLE);
         etFullName.setEnabled(true);
         setCheckboxesEnabled(true);
+        etNewPassword.setEnabled(true);
+        etOldPassword.setEnabled(true);
+        etConfirmNewPassword.setEnabled(true);
 
         btnEdit.setVisibility(View.GONE);
         btnSave.setVisibility(View.VISIBLE);
+        btnChangePassword.setVisibility(View.VISIBLE);
+
+    }
+
+
+    private boolean isPasswordValid(String pass, String confirmPass){
+        if(pass.isEmpty() || confirmPass.isEmpty()){
+            UIUtil.showSnackbar(requireView(), "Password fields cannot be empty");
+            return false;
+        }else if(!pass.equals(confirmPass)){
+            UIUtil.showSnackbar(requireView(), "Passwords did not match");
+            return false;
+        }else if(pass.length() < 8 || confirmPass.length() < 8 ){
+            UIUtil.showSnackbar(requireView(), "Password length must be 8 characters long");
+            return false;
+        }else{
+            return true;
+        }
+    }
+
+    private void updatePassword(String newPass, String confirmPass, String oldPassword) {
+        if (oldPassword.isEmpty()) {
+            UIUtil.showSnackbar(requireView(), "Please enter your current password");
+            return;
+        }
+
+        if (isPasswordValid(newPass, confirmPass) && isWifiConnected) {
+            FirebaseUser user = auth.getCurrentUser();
+            if (user != null) {
+                reauthenticateAndUpdate(user, newPass, oldPassword);
+            }
+        } else if (!isWifiConnected) {
+            UIUtil.showSnackbar(requireView(), "You cannot update your password in offline mode");
+        }
+    }
+
+    private void clearPasswordFields(){
+        etOldPassword.setText("");
+        etNewPassword.setText("");
+        etConfirmNewPassword.setText("");
+    }
+
+    private void reauthenticateAndUpdate(FirebaseUser user, String newPassword, String currentPassword) {
+        AuthCredential credential = EmailAuthProvider.getCredential(user.getEmail(), currentPassword);
+
+        user.reauthenticate(credential).addOnCompleteListener(reauthTask -> {
+            if (reauthTask.isSuccessful()) {
+                user.updatePassword(newPassword).addOnCompleteListener(updateTask -> {
+                    if (updateTask.isSuccessful()) {
+                        UIUtil.showSnackbar(requireView(), "Password updated successfully!");
+                        clearPasswordFields();
+                    } else {
+                        UIUtil.showSnackbar(requireView(), "Update failed: " + updateTask.getException().getMessage());
+                    }
+                });
+            } else {
+                UIUtil.showSnackbar(requireView(), "Current password incorrect.");
+            }
+        });
+    }
+
+    private void setRealTimeEditTextListener(){
+        etNewPassword.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void afterTextChanged(Editable s) {}
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                String input = s.toString();
+
+                if(etNewPassword.hasFocus()){
+                    if(input.isEmpty()){
+                        tilNewPassword.setError("Password is required.");
+                    }else if(input.length() < 8 ){
+                        tilNewPassword.setError("Password must be at least 8 characters long.");
+                    }else{
+                        tilNewPassword.setError(null);
+                    }
+                }
+            }
+        });
+
+        etConfirmNewPassword.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void afterTextChanged(Editable s) {}
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                String input = s.toString();
+                if(etConfirmNewPassword.hasFocus()){
+                    if(input.isEmpty()){
+                        tilConfirmNewPassword.setError("Password is required.");
+                    }else if(input.length() < 8 ){
+                        tilConfirmNewPassword.setError("Password must be at least 8 characters long.");
+                    }else if(!etNewPassword.getText().toString().equals(input)){
+                        tilConfirmNewPassword.setError("Passwords do not match.");
+                    }else{
+                        tilConfirmNewPassword.setError(null);
+                    }
+                }
+            }
+        });
+
+        etOldPassword.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                String input = s.toString();
+                if(etOldPassword.hasFocus()){
+                    if(input.isEmpty()){
+                        tilOldPassword.setError("Password is required.");
+                    }else if(input.length() < 8 ){
+                        tilOldPassword.setError("Password must be at least 8 characters long.");
+                    }else{
+                        tilOldPassword.setError(null);
+                    }
+                }
+            }
+        });
     }
 
     private void setCheckboxesEnabled(boolean enabled) {
@@ -180,6 +368,7 @@ public class ProfileFragment extends Fragment {
         cbFish.setEnabled(enabled);
         cbShellfish.setEnabled(enabled);
         cbSesame.setEnabled(enabled);
+        cbGluten.setEnabled(enabled);
     }
 
     private void saveProfile() {
@@ -192,10 +381,11 @@ public class ProfileFragment extends Fragment {
         if (cbPeanuts.isChecked()) selectedAllergens.add("Peanuts");
         if (cbTreeNuts.isChecked()) selectedAllergens.add("Tree Nuts");
         if (cbSoy.isChecked()) selectedAllergens.add("Soybeans");
-        if (cbWheat.isChecked()) selectedAllergens.add("Wheat / Gluten");
+        if (cbWheat.isChecked()) selectedAllergens.add("Wheat");
         if (cbFish.isChecked()) selectedAllergens.add("Fish");
         if (cbShellfish.isChecked()) selectedAllergens.add("Shellfish");
         if (cbSesame.isChecked()) selectedAllergens.add("Sesame");
+        if (cbGluten.isChecked()) selectedAllergens.add("Gluten");
 
         String uid = auth.getCurrentUser().getUid();
 
@@ -224,9 +414,19 @@ public class ProfileFragment extends Fragment {
         ref.child("allergies").keepSynced(true);
 
         // Disable editing after save
+        clearPasswordFields();
         etFullName.setEnabled(false);
         setCheckboxesEnabled(false);
-
+        etFullName.setEnabled(false);
+        etNewPassword.setEnabled(false);
+        etConfirmNewPassword.setEnabled(false);
+        etOldPassword.setEnabled(false);
+        tilOldPassword.setVisibility(View.GONE);
+        tilNewPassword.setVisibility(View.GONE);
+        tilConfirmNewPassword.setVisibility(View.GONE);
+        vLine.setVisibility(View.GONE);
+        tvChangePassword.setVisibility(View.GONE);
+        btnChangePassword.setVisibility(View.GONE);
         btnSave.setVisibility(View.GONE);
         btnEdit.setVisibility(View.VISIBLE);
     }
@@ -258,10 +458,11 @@ public class ProfileFragment extends Fragment {
         cbPeanuts.setChecked(allergies.contains("Peanuts"));
         cbTreeNuts.setChecked(allergies.contains("Tree Nuts"));
         cbSoy.setChecked(allergies.contains("Soybeans"));
-        cbWheat.setChecked(allergies.contains("Wheat / Gluten"));
+        cbWheat.setChecked(allergies.contains("Wheat"));
         cbFish.setChecked(allergies.contains("Fish"));
         cbShellfish.setChecked(allergies.contains("Shellfish"));
         cbSesame.setChecked(allergies.contains("Sesame"));
+        cbGluten.setChecked(allergies.contains("Gluten"));
     }
 
     private void displayWebsite(){

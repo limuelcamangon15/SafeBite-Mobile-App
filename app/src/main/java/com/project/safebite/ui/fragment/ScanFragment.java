@@ -850,7 +850,7 @@ public class ScanFragment extends Fragment {
                             String brand = safeOptString(obj, "brands", "No Product Brand");
                             String image = safeOptString(obj, "image_url", null);
                             String score = safeOptString(obj, "nutriscore_grade", "No nutriscore_grade");
-                            String barcode = safeOptString(obj, "product_name", null);
+                            String barcode = safeOptString(obj, "code", null);
                             JSONArray allergensArray = obj.optJSONArray("allergens_tags");
                             Log.d("Nutri score", score);
                             Log.d("HELLO", "im here2");

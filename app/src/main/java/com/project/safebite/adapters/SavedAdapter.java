@@ -1,12 +1,7 @@
 package com.project.safebite.adapters;
 
-import static androidx.core.content.ContentProviderCompat.requireContext;
-
 import android.content.Context;
 import android.graphics.Color;
-import android.os.Build;
-import android.os.VibrationEffect;
-import android.os.Vibrator;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,7 +17,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -34,227 +28,216 @@ import com.project.safebite.constants.DatabaseConstants;
 import com.project.safebite.model.Product;
 import com.project.safebite.utils.UIUtil;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
-public class SavedAdapter extends RecyclerView.Adapter<SavedAdapter.SavedViewHolder>{
+public class SavedAdapter extends RecyclerView.Adapter<SavedAdapter.ViewHolder> {
 
-    private List<Product> savedProductList = new ArrayList<>();
-
+    private List<Product> list;
     private Context context;
-    private boolean isProductSaved = false;
-    private boolean isAllergic = false;
-    private FirebaseAuth auth;
     private View parent;
-    private String uid = null;
-    List<String> userAllergen;
-    public SavedAdapter(View parent, Context context, List<Product> savedProductList, FirebaseAuth auth){
-        this.savedProductList = savedProductList;
-        this.context = context;
+    private String uid;
+    private List<String> userAllergen = new ArrayList<>();
+
+    public SavedAdapter(View parent, Context context, List<Product> list, FirebaseAuth auth) {
         this.parent = parent;
-        this.auth = auth;
-        uid = auth.getCurrentUser().getUid();
-        userAllergen = new ArrayList<>();
+        this.context = context;
+        this.list = list;
+        this.uid = auth.getCurrentUser().getUid();
+
+        // Fetch user allergens ONCE when the adapter is created to prevent lag during scrolling
+        fetchUserAllergens();
+    }
+
+    private void fetchUserAllergens() {
+        String pathAllergies = "users/" + uid + "/allergens";
+        DatabaseReference allergenRef = FirebaseDatabase.getInstance(DatabaseConstants.DATABASE_URL).getReference(pathAllergies);
+
+        allergenRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                userAllergen.clear();
+                for (DataSnapshot child : snapshot.getChildren()) {
+                    String allergen = child.getValue(String.class);
+                    if (allergen != null) userAllergen.add(allergen);
+                }
+                notifyDataSetChanged(); // Refresh list to highlight allergens
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("SavedAdapter", "Failed to load allergens", error.toException());
+            }
+        });
+    }
+
+    public static class ViewHolder extends RecyclerView.ViewHolder {
+        TextView tvName, tvBrand, tvAllergens, tvNutriments;
+        ImageView ivImage;
+        ImageButton ibSave, ibAllergic;
+
+        public ViewHolder(@NonNull View itemView) {
+            super(itemView);
+            tvName = itemView.findViewById(R.id.tvName);
+            tvBrand = itemView.findViewById(R.id.tvBrand);
+            tvAllergens = itemView.findViewById(R.id.tvAllergens);
+            tvNutriments = itemView.findViewById(R.id.tvNutrimentsAnalysis);
+            ivImage = itemView.findViewById(R.id.ivImage);
+            ibSave = itemView.findViewById(R.id.ibSave);
+            ibAllergic = itemView.findViewById(R.id.ibAllergic);
+        }
     }
 
     @NonNull
     @Override
-    public SavedAdapter.SavedViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(context)
                 .inflate(R.layout.fragment_recommended_product, parent, false);
-        return new SavedAdapter.SavedViewHolder(view);
+        return new ViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull SavedAdapter.SavedViewHolder holder, int position){
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+        Product product = list.get(position);
 
-        Product product = savedProductList.get(position);
+        holder.tvName.setText(product.getName());
+        holder.tvBrand.setText(product.getBrand());
+        holder.tvNutriments.setText(product.getNutrimentsAnalysis());
 
-        holder.ibSave.setImageResource(R.drawable.bookmark_24px);
-        holder.ibSave.setBackgroundResource(R.drawable.rounded_bg_green);
-        holder.ibAllergic.setBackgroundResource(R.drawable.rounded_bg_red);
-        holder.ibAllergic.setImageResource(R.drawable.warning_24px);
-        holder.ibAllergic.setColorFilter(Color.parseColor("#E24B4A"));
+        // Handle Allergens Text
+        List<String> allergenList = product.getAllergens();
+        if (allergenList != null && !allergenList.isEmpty()) {
+            holder.tvAllergens.setText(android.text.TextUtils.join("\n", allergenList));
+        } else {
+            holder.tvAllergens.setText("No Allergen Listed");
+        }
 
-        String savedPath = "users/" + uid + "/savedProducts";
-        String allergicPath = "users/" + uid + "/savedAllergicProducts";
-        DatabaseReference savedRef = FirebaseDatabase.getInstance(DatabaseConstants.DATABASE_URL).getReference(savedPath);
-        DatabaseReference allergicRef = FirebaseDatabase.getInstance(DatabaseConstants.DATABASE_URL).getReference(allergicPath);
+        checkAllergens(allergenList != null ? allergenList : new ArrayList<>(), userAllergen, holder.tvAllergens);
+
+        // Handle Image
         String imageUrl = product.getImageUrl();
-        if(imageUrl != null && !imageUrl.isEmpty()){
+        if (imageUrl != null && !imageUrl.isEmpty()) {
             Glide.with(context)
                     .load(imageUrl)
                     .placeholder(R.drawable.placeholder)
                     .error(R.drawable.placeholder)
-                    .override(300,300)
+                    .override(300, 300)
                     .into(holder.ivImage);
-        }else{
-            holder.ivImage.setImageResource(R.drawable.samplefudgee);
+        } else {
+            holder.ivImage.setImageResource(R.drawable.placeholder);
         }
 
-        String pathAllergies = "users/" + uid + "/allergens";
-        DatabaseReference allergenRef = FirebaseDatabase.getInstance(DatabaseConstants.DATABASE_URL).getReference(pathAllergies);
-        allergenRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                userAllergen.clear();
-                for(DataSnapshot child : snapshot.getChildren()){
-                    String allergen = child.getValue(String.class);
-                    if(allergen!=null)userAllergen.add(allergen);
-                }
+        holder.ibSave.setTag("save_" + product.getBarcode());
+        holder.ibAllergic.setTag("allergic_" + product.getBarcode());
 
-                checkAllergens(product.getAllergens(), userAllergen, holder.tvAllergens);
+        setUnsavedUI(holder.ibSave);
+        setUnallergicUI(holder.ibAllergic);
+
+        DatabaseReference savedRef = FirebaseDatabase.getInstance(DatabaseConstants.DATABASE_URL)
+                .getReference("users/" + uid + "/savedProducts/" + product.getBarcode());
+        DatabaseReference allergicRef = FirebaseDatabase.getInstance(DatabaseConstants.DATABASE_URL)
+                .getReference("users/" + uid + "/savedAllergicProducts/" + product.getBarcode());
+
+        Task<DataSnapshot> savedTask = savedRef.get();
+        Task<DataSnapshot> allergicTask = allergicRef.get();
+
+        Tasks.whenAllSuccess(savedTask, allergicTask).addOnSuccessListener(results -> {
+            DataSnapshot savedSnapshot = (DataSnapshot) results.get(0);
+            DataSnapshot allergicSnapshot = (DataSnapshot) results.get(1);
+
+            if (savedSnapshot.exists() && holder.ibSave.getTag().equals("save_" + product.getBarcode())) {
+                setSavedUI(holder.ibSave);
             }
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {            }
+
+            if (allergicSnapshot.exists() && holder.ibAllergic.getTag().equals("allergic_" + product.getBarcode())) {
+                setAllergicUI(holder.ibAllergic);
+            }
         });
 
-        holder.tvName.setText(product.getName());
-        holder.tvBrand.setText(product.getBrand());
-
-        List<String> allergenList = product.getAllergens();
-        if(allergenList != null && !allergenList.isEmpty()){
-            holder.tvAllergens.setText(android.text.TextUtils.join("\n", product.getAllergens()));
-        }else{
-            holder.tvAllergens.setText("No Allergen Listed");
-
-        }
-        holder.tvNutrimentAnalysis.setText(product.getNutrimentsAnalysis());
-        holder.ibSave.setOnClickListener(v->saveProduct(product, holder.ibSave));
-        holder.ibAllergic.setOnClickListener(v->flagAsAllergic(product, holder.ibAllergic));
-
-
-        Task<DataSnapshot> savedTask = savedRef.child(product.getBarcode()).get();
-        Task<DataSnapshot> allergicTask = allergicRef.child(product.getBarcode()).get();
-
-        Tasks.whenAllSuccess(savedTask, allergicTask)
-                        .addOnSuccessListener(results ->{
-                            DataSnapshot savedSnapshot = (DataSnapshot) results.get(0);
-                            DataSnapshot allergicSnapshot = (DataSnapshot) results.get(1);
-
-                            isProductSaved = savedSnapshot.exists();
-                            if(isProductSaved){
-                                holder.ibSave.setImageResource(R.drawable.bookmark_check_24px);
-                                holder.ibSave.setBackgroundResource(R.drawable.rounded_bg_green_active);
-                            }else{
-                                holder.ibSave.setImageResource(R.drawable.bookmark_24px);
-                                holder.ibSave.setBackgroundResource(R.drawable.rounded_bg_green);
-                            }
-
-                            isAllergic = allergicSnapshot.exists();
-                            if(isAllergic){
-                                holder.ibAllergic.setImageResource(R.drawable.warning_24px);
-                                holder.ibAllergic.setColorFilter(Color.parseColor("#E24B4A"));
-                                holder.ibAllergic.setBackgroundResource(R.drawable.rounded_bg_red_active);
-                            }else{
-                                holder.ibAllergic.setImageResource(R.drawable.warning_24px);
-                                holder.ibAllergic.setColorFilter(Color.parseColor("#E24B4A"));
-                                holder.ibAllergic.setBackgroundResource(R.drawable.rounded_bg_red);
-                            }
-
-                        })
-                .addOnFailureListener(e -> {
-                    Log.e("ProductCheck", "Failed to fetch product states", e);
-                });
-
-        checkAllergens(product.getAllergens(), userAllergen, holder.tvAllergens);
-
+        holder.ibSave.setOnClickListener(v -> toggleSave(product, holder.ibSave));
+        holder.ibAllergic.setOnClickListener(v -> toggleAllergic(product, holder.ibAllergic));
     }
 
-    private void saveProduct(Product savedProduct, ImageButton ibBookmark){
-        isProductSaved = !isProductSaved;
+    private void toggleSave(Product product, ImageButton ibSave) {
+        DatabaseReference ref = FirebaseDatabase.getInstance(DatabaseConstants.DATABASE_URL)
+                .getReference("users/" + uid + "/savedProducts");
 
-        String path = "users/" + uid + "/savedProducts";
-        String barcode = savedProduct.getBarcode();
+        String id = product.getBarcode();
 
-        DatabaseReference userRef = FirebaseDatabase.getInstance(DatabaseConstants.DATABASE_URL).getReference(path);
-
-        if(isProductSaved){
-            userRef.child(barcode).setValue(savedProduct);
-
-            UIUtil.showSnackbar(parent, "Product Saved!");
-            ibBookmark.setImageResource(R.drawable.bookmark_check_24px);
-            ibBookmark.setColorFilter(Color.parseColor("#639922"));
-            ibBookmark.setBackgroundResource(R.drawable.rounded_bg_green_active);
-        }
-        else{
-            userRef.child(barcode).removeValue();
-
-            UIUtil.showSnackbar(parent, "Product Unsaved!");
-            ibBookmark.setImageResource(R.drawable.bookmark_24px);
-            ibBookmark.setColorFilter(Color.parseColor("#639922"));
-            ibBookmark.setBackgroundResource(R.drawable.rounded_bg_green);
-        }
-
-        userRef.keepSynced(true);
-
+        ref.child(id).get().addOnSuccessListener(snapshot -> {
+            if (snapshot.exists()) {
+                ref.child(id).removeValue();
+                setUnsavedUI(ibSave);
+                UIUtil.showSnackbar(parent, "Product Unsaved!");
+            } else {
+                ref.child(id).setValue(product);
+                setSavedUI(ibSave);
+                UIUtil.showSnackbar(parent, "Product Saved!");
+            }
+            ref.keepSynced(true);
+        });
     }
 
-    private void flagAsAllergic(Product flaggedProduct, ImageButton ibAllergic){
-        isAllergic = !isAllergic;
+    private void toggleAllergic(Product product, ImageButton ibAllergic) {
+        DatabaseReference ref = FirebaseDatabase.getInstance(DatabaseConstants.DATABASE_URL)
+                .getReference("users/" + uid + "/savedAllergicProducts");
 
-        String path = "users/" + uid + "/savedAllergicProducts";
-        String barcode = flaggedProduct.getBarcode();
+        String id = product.getBarcode();
 
-        DatabaseReference userRef = FirebaseDatabase.getInstance(DatabaseConstants.DATABASE_URL).getReference(path);
-
-        if(isAllergic){
-
-            userRef.child(barcode).setValue(flaggedProduct);
-
-            ibAllergic.setImageResource(R.drawable.warning_24px);
-            ibAllergic.setColorFilter(Color.parseColor("#E24B4A"));
-            ibAllergic.setBackgroundResource(R.drawable.rounded_bg_red_active);
-            UIUtil.showSnackbar(parent, "Product Marked as Allergic!");
-        }else{
-            userRef.child(barcode).removeValue();
-
-            ibAllergic.setImageResource(R.drawable.warning_24px);
-            ibAllergic.setColorFilter(Color.parseColor("#E24B4A"));
-            ibAllergic.setBackgroundResource(R.drawable.rounded_bg_red);
-            UIUtil.showSnackbar(parent, "Product Unmarked as Allergic!");
-        }
-
-        userRef.keepSynced(true);
+        ref.child(id).get().addOnSuccessListener(snapshot -> {
+            if (snapshot.exists()) {
+                ref.child(id).removeValue();
+                setUnallergicUI(ibAllergic);
+                UIUtil.showSnackbar(parent, "Product Unmarked as Allergic!");
+            } else {
+                ref.child(id).setValue(product);
+                setAllergicUI(ibAllergic);
+                UIUtil.showSnackbar(parent, "Product Marked as Allergic!");
+            }
+            ref.keepSynced(true);
+        });
     }
 
-
-    private void checkAllergens(List<String> productAllergens, List<String> userAllergies, TextView tvAllergens){
+    private void checkAllergens(List<String> productAllergens, List<String> userAllergies, TextView tvAllergens) {
         tvAllergens.setTextColor(ContextCompat.getColor(context, R.color.white));
-        if(!productAllergens.isEmpty() && !userAllergies.isEmpty()){
+        if (!productAllergens.isEmpty() && !userAllergies.isEmpty()) {
             boolean allergenMatched = !Collections.disjoint(
                     userAllergies.stream().map(String::toLowerCase).collect(java.util.stream.Collectors.toList()),
                     productAllergens.stream().map(String::toLowerCase).collect(java.util.stream.Collectors.toList()));
-            if(allergenMatched){
-                    tvAllergens.setTextColor(ContextCompat.getColor(context, R.color.red));
-                }
 
+            if (allergenMatched) {
+                tvAllergens.setTextColor(ContextCompat.getColor(context, R.color.red));
             }
         }
+    }
+
+    private void setSavedUI(ImageButton ibSave) {
+        ibSave.setImageResource(R.drawable.bookmark_check_24px);
+        ibSave.setBackgroundResource(R.drawable.rounded_bg_green_active);
+        ibSave.setColorFilter(Color.parseColor("#639922"));
+    }
+
+    private void setUnsavedUI(ImageButton ibSave) {
+        ibSave.setImageResource(R.drawable.bookmark_24px);
+        ibSave.setBackgroundResource(R.drawable.rounded_bg_green);
+        ibSave.setColorFilter(Color.parseColor("#639922"));
+    }
+
+    private void setAllergicUI(ImageButton ibAllergic) {
+        ibAllergic.setImageResource(R.drawable.warning_24px);
+        ibAllergic.setBackgroundResource(R.drawable.rounded_bg_red_active);
+        ibAllergic.setColorFilter(Color.parseColor("#E24B4A"));
+    }
+
+    private void setUnallergicUI(ImageButton ibAllergic) {
+        ibAllergic.setImageResource(R.drawable.warning_24px);
+        ibAllergic.setBackgroundResource(R.drawable.rounded_bg_red);
+        ibAllergic.setColorFilter(Color.parseColor("#E24B4A"));
+    }
 
     @Override
     public int getItemCount() {
-        return savedProductList.size();
-    }
-
-    public static class SavedViewHolder extends RecyclerView.ViewHolder{
-        TextView tvAllergens, tvBrand, tvName, tvNutrimentAnalysis;
-        ImageView ivImage;
-        ImageButton ibSave, ibAllergic;
-
-        public SavedViewHolder(@NonNull View foodView){
-            super(foodView);
-            tvAllergens = foodView.findViewById(R.id.tvAllergens);
-            tvBrand = foodView.findViewById(R.id.tvBrand);
-            tvName = foodView.findViewById(R.id.tvName);
-            tvNutrimentAnalysis = foodView.findViewById(R.id.tvNutrimentsAnalysis);
-            ivImage = foodView.findViewById(R.id.ivImage);
-            ibSave = foodView.findViewById(R.id.ibSave);
-            ibAllergic = foodView.findViewById(R.id.ibAllergic);
-        }
+        return list.size();
     }
 }

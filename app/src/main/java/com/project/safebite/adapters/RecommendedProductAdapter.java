@@ -82,7 +82,7 @@ public class RecommendedProductAdapter extends RecyclerView.Adapter<RecommendedP
                     .override(300,300)
                     .into(holder.ivImage);
         }else{
-            holder.ivImage.setImageResource(R.drawable.samplefudgee);
+            holder.ivImage.setImageResource(R.drawable.placeholder);
         }
 
         holder.tvName.setText(product.getName());
