@@ -115,7 +115,14 @@ public class SavedAdapter extends RecyclerView.Adapter<SavedAdapter.SavedViewHol
 
         holder.tvName.setText(product.getName());
         holder.tvBrand.setText(product.getBrand());
-        holder.tvAllergens.setText(android.text.TextUtils.join("\n", product.getAllergens()));
+
+        List<String> allergenList = product.getAllergens();
+        if(allergenList != null && !allergenList.isEmpty()){
+            holder.tvAllergens.setText(android.text.TextUtils.join("\n", product.getAllergens()));
+        }else{
+            holder.tvAllergens.setText("No Allergen Listed");
+
+        }
         holder.tvNutrimentAnalysis.setText(product.getNutrimentsAnalysis());
         holder.ibSave.setOnClickListener(v->saveProduct(product, holder.ibSave));
         holder.ibAllergic.setOnClickListener(v->flagAsAllergic(product, holder.ibAllergic));

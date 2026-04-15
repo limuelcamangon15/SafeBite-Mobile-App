@@ -500,11 +500,11 @@ public class ScanFragment extends Fragment {
                             return;
                         }
 
-                        String image = product.optString("image_url", "Image is not available");
-                        String productName = product.optString("product_name", "Name is not available");
-                        String brands = product.optString("brands", "Brand is not available");
-                        String nutriScoreGrade = product.optString("nutriscore_grade", "Nutriscore not available");
-                        String nutritionDataPer = product.optString("nutrition_data_per", "nutrition data not available");
+                        String image = safeOptString(product, "image_url", "");
+                        String productName = safeOptString(product, "product_name", "No Product Name");
+                        String brands = safeOptString(product, "brands", "No Product Brand");
+                        String nutriScoreGrade = safeOptString(product, "nutriscore_grade", "No nutriscore grade");
+                        String nutritionDataPer = safeOptString(product, "nutrition_data_per", "No data specified");
                         JSONObject nutrimentsObj = product.optJSONObject("nutriments");
                         JSONObject nutrimentsEstimatedObj = product.optJSONObject("nutriments_estimated");
                         JSONArray allergenArray = product.optJSONArray("allergens_tags");
@@ -846,12 +846,11 @@ public class ScanFragment extends Fragment {
 
                         for(int i = 0; i < products.length(); i++){
                             JSONObject obj = products.getJSONObject(i);
-
-                            String name = obj.optString("product_name", "");
-                            String brand = obj.optString("brands", "");
-                            String image = obj.optString("image_url", "");
-                            String score = obj.optString("nutriscore_grade", null);
-                            String barcode = obj.optString("code",null);
+                            String name = safeOptString(obj, "product_name", "No Product Name");
+                            String brand = safeOptString(obj, "brands", "No Product Brand");
+                            String image = safeOptString(obj, "image_url", null);
+                            String score = safeOptString(obj, "nutriscore_grade", "No nutriscore_grade");
+                            String barcode = safeOptString(obj, "product_name", null);
                             JSONArray allergensArray = obj.optJSONArray("allergens_tags");
                             Log.d("Nutri score", score);
                             Log.d("HELLO", "im here2");
@@ -988,6 +987,20 @@ public class ScanFragment extends Fragment {
             rvProduct.setAdapter(rpAdapter);
         }
 
+    }
+
+    private String safeOptString(JSONObject obj, String key, String fallback) {
+        String value = obj.optString(key);
+
+        if (value == null) return fallback;
+
+        value = value.trim();
+
+        if (value.isEmpty() || value.equalsIgnoreCase("null") || value.equalsIgnoreCase("unknown")) {
+            return fallback;
+        }
+
+        return value;
     }
 
 }
