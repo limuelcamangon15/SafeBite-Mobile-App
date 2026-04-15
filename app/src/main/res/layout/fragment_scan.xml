@@ -41,6 +41,7 @@
                     android:imeOptions="actionSearch"
                     android:inputType="number"
                     android:singleLine="true"
+                    android:textColor="@color/white"
                     android:padding="12dp"/>
 
             </com.google.android.material.textfield.TextInputLayout>
@@ -470,7 +471,7 @@
                     android:textSize="15sp"
                     android:layout_marginTop="20dp"
                     android:gravity="center"
-                    android:textColor="#80FFFFFF"
+                    android:textColor="@color/white"
                     android:padding="10dp"
                     android:visibility="gone"
                     />

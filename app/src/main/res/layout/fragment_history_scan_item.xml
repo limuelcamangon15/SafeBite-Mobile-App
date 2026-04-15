@@ -9,7 +9,7 @@
     app:cardElevation="2dp"
     app:strokeWidth="1.3dp"
     app:strokeColor="#20FFFFFF"
-    android:backgroundTint="#3A9D9898"
+    android:backgroundTint="#101010"
     >
 
     <LinearLayout
@@ -33,6 +33,7 @@
                 android:textStyle="bold"
                 android:textSize="18sp"
                 android:textIsSelectable="true"
+                android:textColor="@color/white"
                 />
 
             <TextView
@@ -42,7 +43,9 @@
                 android:layout_gravity="end"
                 android:textAlignment="textEnd"
                 android:text=""
-                android:textSize="10sp" />
+                android:textSize="10sp"
+                android:textColor="@color/white"
+                />
 
         </LinearLayout>
 
@@ -59,20 +62,26 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text=""
-                android:textSize="10sp" />
+                android:textSize="10sp"
+                android:textColor="@color/white"
+                />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text=" • "
-                android:textSize="10sp" />
+                android:textSize="10sp"
+                android:textColor="@color/white"
+                />
 
             <TextView
                 android:id="@+id/tvBrand"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text=""
-                android:textSize="10sp" />
+                android:textSize="10sp"
+                android:textColor="@color/white"
+                />
 
         </LinearLayout>
     </LinearLayout>

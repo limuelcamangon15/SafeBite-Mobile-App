@@ -16,7 +16,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="History"
-            android:textSize="30sp"
+            android:textSize="24sp"
             android:gravity="center"
             android:textColor="@color/white"
             android:textStyle="bold"
@@ -48,7 +48,6 @@
                     android:paddingBottom="5dp"
                     android:text="Scans"
                     android:textColor="#A4C639"
-
                     />
 
                 <TextView
@@ -92,7 +91,7 @@
             android:textSize="15sp"
             android:layout_marginTop="20dp"
             android:gravity="center"
-            android:textColor="#80FFFFFF"
+            android:textColor="@color/white"
             android:padding="10dp"
             android:visibility="gone"
             />

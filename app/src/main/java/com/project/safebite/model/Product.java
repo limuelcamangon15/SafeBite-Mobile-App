@@ -13,14 +13,17 @@ public class Product {
     long timestamp;
     private String nutrimentsAnalysis;
     private String category;
+    private boolean isAllergenMatched;
 
     public Product(){};
 
-    public Product(String name, String brand, String barcode, long timestamp){
+    public Product(String name, String brand, String barcode, long timestamp, List<String> allergens, boolean isAllergenMatched){
         this.name = name;
         this.brand = brand;
         this.barcode = barcode;
         this.timestamp = timestamp;
+        this.allergens = allergens;
+        this.isAllergenMatched = isAllergenMatched;
     }
 
     public Product(
@@ -117,5 +120,13 @@ public class Product {
 
     public String getCategory() {
         return category;
+    }
+
+    public void setAllergenMatched(boolean allergenMatched) {
+        isAllergenMatched = allergenMatched;
+    }
+
+    public boolean isAllergenMatched() {
+        return isAllergenMatched;
     }
 }

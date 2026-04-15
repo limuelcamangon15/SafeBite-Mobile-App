@@ -122,6 +122,7 @@ public class ScanFragment extends Fragment {
     NetworkViewModel networkViewModel;
     boolean isWifiConnected;
     String category = null;
+    boolean isMatched = false;
 
     public ScanFragment() {
         // Required empty public constructor
@@ -317,7 +318,16 @@ public class ScanFragment extends Fragment {
             if(actionId == EditorInfo.IME_ACTION_SEARCH ||
                     (event != null && event.getKeyCode() == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_DOWN)
             ){
-                searchProduct(etBarcode.getText().toString());
+                if(etBarcode.getText().toString().isEmpty()){
+                    UIUtil.showSnackbar(parent, "Barcode cannot be empty");
+                }
+                else if(etBarcode.getText().toString().length() < 13){
+                    UIUtil.showSnackbar(parent, "Invalid Barcode length");
+                }else{
+                    searchProduct(etBarcode.getText().toString());
+                }
+
+
 
                 return true;
             }
@@ -380,40 +390,55 @@ public class ScanFragment extends Fragment {
         DatabaseReference savedRef = FirebaseDatabase.getInstance(DatabaseConstants.DATABASE_URL).getReference(savedPath);
         DatabaseReference allergicRef = FirebaseDatabase.getInstance(DatabaseConstants.DATABASE_URL).getReference(allergicPath);
 
-        Task<DataSnapshot> savedTask = savedRef.child(barcode).get();
-        Task<DataSnapshot> allergicTask = allergicRef.child(barcode).get();
+        DatabaseReference savedProductRef = savedRef.child(barcode);
+        DatabaseReference allergicProductRef = allergicRef.child(barcode);
 
-        Tasks.whenAllSuccess(savedTask, allergicTask)
-                .addOnSuccessListener(results ->{
-                    DataSnapshot savedSnapshot = (DataSnapshot) results.get(0);
-                    DataSnapshot allergicSnapshot = (DataSnapshot) results.get(1);
+        savedProductRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot savedSnapshot) {
 
-                    isProductSaved = savedSnapshot.exists();
-                    if(isProductSaved){
-                        ibSave.setImageResource(R.drawable.bookmark_check_24px);
-                        ibSave.setBackgroundResource(R.drawable.rounded_bg_green_active);
-                    }else{
-                        ibSave.setImageResource(R.drawable.bookmark_24px);
-                        ibSave.setBackgroundResource(R.drawable.rounded_bg_green);
+                allergicProductRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot allergicSnapshot) {
+
+                        boolean isProductSaved = savedSnapshot.exists();
+                        boolean isAllergic = allergicSnapshot.exists();
+
+                        Log.d("DEBUG", "Saved: " + isProductSaved);
+                        Log.d("DEBUG", "Allergic: " + isAllergic);
+
+                        if (isProductSaved) {
+                            ibSave.setImageResource(R.drawable.bookmark_check_24px);
+                            ibSave.setBackgroundResource(R.drawable.rounded_bg_green_active);
+                        } else {
+                            ibSave.setImageResource(R.drawable.bookmark_24px);
+                            ibSave.setBackgroundResource(R.drawable.rounded_bg_green);
+                        }
+
+                        if (isAllergic) {
+                            ibAllergic.setBackgroundResource(R.drawable.rounded_bg_red_active);
+                            bannerAllergic.setVisibility(View.VISIBLE);
+                        } else {
+                            ibAllergic.setBackgroundResource(R.drawable.rounded_bg_red);
+                            bannerAllergic.setVisibility(View.GONE);
+                        }
                     }
 
-                    isAllergic = allergicSnapshot.exists();
-                    if(isAllergic){
-                        ibAllergic.setImageResource(R.drawable.warning_24px);
-                        ibAllergic.setColorFilter(Color.parseColor("#E24B4A"));
-                        ibAllergic.setBackgroundResource(R.drawable.rounded_bg_red_active);
-                        bannerAllergic.setVisibility(View.VISIBLE);
-                    }else{
-                        ibAllergic.setImageResource(R.drawable.warning_24px);
-                        ibAllergic.setColorFilter(Color.parseColor("#E24B4A"));
-                        ibAllergic.setBackgroundResource(R.drawable.rounded_bg_red);
-                        bannerAllergic.setVisibility(View.GONE);
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        Log.e("ProductCheck", "Allergic fetch failed");
                     }
-
-                })
-                .addOnFailureListener(e -> {
-                    Log.e("ProductCheck", "Failed to fetch product states", e);
                 });
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("ProductCheck", "Saved fetch failed");
+            }
+        });
+
+        savedRef.keepSynced(true);
+        allergicRef.keepSynced(true);
 
 
         if(!isWifiConnected){
@@ -428,10 +453,10 @@ public class ScanFragment extends Fragment {
     private void checkAllergens(List<String> productAllergens, List<String> userAllergies){
         tvAllergens.setTextColor(ContextCompat.getColor(context, R.color.white));
         if(!productAllergens.isEmpty() && !userAllergies.isEmpty()){
-            boolean allergenMatched = !Collections.disjoint(
+            isMatched = !Collections.disjoint(
                     userAllergies.stream().map(String::toLowerCase).collect(java.util.stream.Collectors.toList()),
                     productAllergens.stream().map(String::toLowerCase).collect(java.util.stream.Collectors.toList()));
-            if(allergenMatched){
+            if(isMatched){
                 Vibrator vibrator = (Vibrator) requireContext().getSystemService(Context.VIBRATOR_SERVICE);
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     vibrator.vibrate(VibrationEffect.createOneShot(1500, VibrationEffect.DEFAULT_AMPLITUDE));
@@ -546,14 +571,14 @@ public class ScanFragment extends Fragment {
                         nutrimentsValue += "\nnutrition data per: " + nutritionDataPer;
 
                         name = productName;
-                        brand = brands;
+                        brand = brands.replace(",", ", ");
                         //allergens = allergies.toString();
                         imageUrl = image;
                         nutriscoreGrade = nutriScoreGrade;
                         allergenList = allergies;
 
                         checkAllergens(allergenList, userAllergies);
-                        recordScan(name, brand);
+                        recordScan(name, brand, allergenList);
                         updateUI(image, productName, brands, allergies, etBarcode.getText().toString(), "Analyzing...");
                         generateNutriAnalysis(userAllergies, allergenList, nutrimentsValue, name);
                         if(category!=null && nutriScoreGrade != null || !nutriScoreGrade.isEmpty()){
@@ -602,61 +627,101 @@ public class ScanFragment extends Fragment {
 
     private void searchProduct(String barcode) {
 
-        String path = "users/" + uid + "/savedProducts/"+ barcode ;
-        DatabaseReference productRef = FirebaseDatabase.getInstance(DatabaseConstants.DATABASE_URL).getReference(path);
+        String savedPath = "users/" + uid + "/savedProducts/" + barcode;
+        String allergicPath = "users/" + uid + "/savedAllergicProducts/" + barcode;
 
-        productRef.addListenerForSingleValueEvent(new ValueEventListener() {
+        DatabaseReference savedRef = FirebaseDatabase
+                .getInstance(DatabaseConstants.DATABASE_URL)
+                .getReference(savedPath);
+
+        DatabaseReference allergicRef = FirebaseDatabase
+                .getInstance(DatabaseConstants.DATABASE_URL)
+                .getReference(allergicPath);
+
+        savedRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                if (snapshot.exists()) {
-                        Product product = snapshot.getValue(Product.class);
-                        if (product != null) {
-                            name = product.getName();
-                            brand = product.getBrand();
-                            imageUrl = product.getImageUrl();
-                            nutriscoreGrade = product.getScore();
-                            allergenList = product.getAllergens();
-                            nutrimentAnalysis = product.getNutrimentsAnalysis();
-                            category = product.getCategory();
-                            updateUI(imageUrl, name, brand, allergenList, barcode, nutrimentAnalysis);
-                            checkAllergens(allergenList, userAllergies);
-                            recordScan(name, brand);
-                            Log.d("Scan", "fetchfromoffline");
-                            if(isWifiConnected){
-                                if(category != null && nutriscoreGrade != null && !nutriscoreGrade.isEmpty()){
-                                    Log.d("CATEGORY", category);
-                                    if(!recommendations.isEmpty()){
+            public void onDataChange(@NonNull DataSnapshot savedSnapshot) {
+
+                allergicRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot allergicSnapshot) {
+
+                        boolean isSaved = savedSnapshot.exists();
+                        boolean isAllergic = allergicSnapshot.exists();
+
+                        DataSnapshot source = null;
+
+                        if (isAllergic) {
+                            source = allergicSnapshot;
+                            Log.d("Scan", "Loaded from allergicProducts");
+                        } else if (isSaved) {
+                            source = savedSnapshot;
+                            Log.d("Scan", "Loaded from savedProducts");
+                        }
+
+                        if (source != null) {
+
+                            Product product = source.getValue(Product.class);
+
+                            if (product != null) {
+                                name = product.getName();
+                                brand = product.getBrand();
+                                imageUrl = product.getImageUrl();
+                                nutriscoreGrade = product.getScore();
+                                allergenList = product.getAllergens();
+                                nutrimentAnalysis = product.getNutrimentsAnalysis();
+                                category = product.getCategory();
+
+                                updateUI(imageUrl, name, brand, allergenList, barcode, nutrimentAnalysis);
+
+                                checkAllergens(allergenList, userAllergies);
+                                recordScan(name, brand, allergenList);
+
+                                if (isWifiConnected &&
+                                        category != null &&
+                                        nutriscoreGrade != null &&
+                                        !nutriscoreGrade.isEmpty()) {
+
+                                    if (!recommendations.isEmpty()) {
                                         recommendations.clear();
                                     }
+
                                     fetchAlternatives(category, nutriscoreGrade, allergenList);
                                     Log.d("Scan", "fetchfromonline");
                                 }
                             }
+
+                        } else {
+                            if (isWifiConnected) {
+                                fetchProductFromApi(barcode);
+                            } else {
+                                UIUtil.showSnackbar(parent, "Product not found in offline cache");
+                            }
                         }
-                }
-                else{
-                    if(isWifiConnected){
-                        fetchProductFromApi(barcode);
-                    }else{
-                        UIUtil.showSnackbar(parent, "Product Not found in offline cache");
                     }
 
-                }
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        UIUtil.showSnackbar(parent, "Error checking allergic products");
+                        if (isWifiConnected) {
+                            fetchProductFromApi(barcode);
+                        }
+                    }
+                });
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                if(isWifiConnected){
+                if (isWifiConnected) {
                     fetchProductFromApi(barcode);
-                }else{
+                } else {
                     UIUtil.showSnackbar(parent, "Unable to load product offline");
                 }
             }
         });
-
     }
 
-    private void recordScan(String name, String brand){
+    private void recordScan(String name, String brand, List<String> allergen){
          String path = "users/" + uid + "/scanHistory";
          String barcode = etBarcode.getText().toString();
          DatabaseReference userRef = FirebaseDatabase.getInstance(DatabaseConstants.DATABASE_URL).getReference(path);
@@ -667,7 +732,9 @@ public class ScanFragment extends Fragment {
                  name,
                  brand,
                  barcode,
-                 System.currentTimeMillis()
+                 System.currentTimeMillis(),
+                 allergen,
+                 isMatched
          );
 
          userRef.child(scanId).setValue(product);
@@ -765,6 +832,7 @@ public class ScanFragment extends Fragment {
         Log.d("HELLO", "im here");
         RequestQueue r = Volley.newRequestQueue(context);
 
+
             String url = "https://safebiteapi.vercel.app/api/recommendation?category="+category;
 
         JsonObjectRequest request = new JsonObjectRequest(
@@ -796,12 +864,14 @@ public class ScanFragment extends Fragment {
                                 }
                             }
 
+                            String filteredBrand = brand.replace(",", ", ");
+
                             if (productAllergens.isEmpty()) {
                                 productAllergens.add("No Allergens Listed");
                             }
 
                             if(score != null && !score.isEmpty() && isBetterNutriScore(score, originalScore)){
-                                recommendations.add(new Product (image, name, brand, productAllergens, barcode ,score, System.currentTimeMillis(), "Analysis not available", category));
+                                recommendations.add(new Product (image, name, filteredBrand, productAllergens, barcode ,score, System.currentTimeMillis(), "Analysis not available", category));
                             }
                         }
 

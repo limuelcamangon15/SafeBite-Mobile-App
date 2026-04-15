@@ -69,29 +69,40 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal">
+                    android:orientation="horizontal"
+                    android:layout_marginTop="10dp"
+                    >
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
-                        android:gravity="center"
-                        android:padding="2dp">
+                        android:gravity="start"
+                        android:padding="2dp"
+
+                        >
 
                         <ImageView
                             android:layout_width="23dp"
                             android:layout_height="wrap_content"
-                            android:src="@drawable/email_icon"/>
+                            android:src="@drawable/email_icon"
+                            app:tint="@color/white"
+                            android:layout_marginEnd="5dp"
+                            android:layout_gravity="center_vertical"
+
+                            />
 
                         <TextView
                             android:id="@+id/tvEmail"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Email Address:"
+                            android:text="Email Address"
                             android:layout_marginStart="5dp"
-                            android:textColor="#8CFFFFFF"
-                            android:textSize="16sp"
-                            android:textStyle="bold" />
+                            android:textColor="@color/white"
+                            android:textSize="17sp"
+                            android:textStyle="bold"
+                            android:layout_gravity="center_vertical"
+                            />
                     </LinearLayout>
                 </LinearLayout>
 
@@ -122,10 +133,11 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="10dp"
-                        android:text="My Allergens"
+                        android:text="Your Allergies"
                         android:textColor="@color/white"
                         android:textSize="16sp"
                         android:textStyle="bold" />
+
                     <!-- Notice Box -->
                     <com.google.android.material.card.MaterialCardView
                         android:layout_width="match_parent"
@@ -133,22 +145,33 @@
                         app:cardCornerRadius="20dp"
                         app:cardElevation="0dp"
                         app:strokeWidth="1dp"
-                        app:strokeColor="#20FFFFFF"
-                        android:backgroundTint="#14928E8E">
+                        app:strokeColor="#3B803B"
+                        android:backgroundTint="#243C24">
 
 
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:gravity="center_vertical"
-                            android:padding="16dp">
+                            android:gravity="top"
+                            android:padding="16dp"
+                            android:orientation="horizontal">
+
+                            <ImageView
+                                android:layout_width="14dp"
+                                android:layout_height="18dp"
+                                android:layout_marginEnd="5dp"
+                                android:paddingTop="4dp"
+                                android:layout_gravity="top"
+                                android:alpha="0.8"
+                                android:src="@drawable/info_icon"
+                                app:tint="@color/white" />
 
                             <TextView
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
                                 android:alpha="0.9"
-                                android:text="Please select all allergens that apply to you. This helps us provide safer recommendations."
+                                android:text="Select any ingredients you're allergic to. We'll use this to keep your recommendations safe."
                                 android:textColor="@color/white"
                                 android:textSize="14sp" />
                         </LinearLayout>
@@ -157,66 +180,139 @@
 
 
                     <!-- MATERIAL CHECKBOX GRID OF OPTIONS -->
-                    <GridLayout
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:columnCount="2">
+                        android:orientation="vertical">
 
-                        <com.google.android.material.checkbox.MaterialCheckBox
-                            android:id="@+id/cbMilk"
-                            android:text="Milk"
-                            android:textColor="@color/white"
-                            android:enabled="false"/>
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
 
-                        <com.google.android.material.checkbox.MaterialCheckBox
-                            android:id="@+id/cbEggs"
-                            android:text="Eggs"
-                            android:textColor="@color/white"
-                            android:enabled="false"/>
+                            <com.google.android.material.checkbox.MaterialCheckBox
+                                android:id="@+id/cbMilk"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Milk"
+                                android:textColor="@color/white"
+                                android:enabled="false"
+                                android:layout_marginStart="15dp"
+                                />
 
-                        <com.google.android.material.checkbox.MaterialCheckBox
-                            android:id="@+id/cbPeanuts"
-                            android:text="Peanuts"
-                            android:textColor="@color/white"
-                            android:enabled="false"/>
+                            <com.google.android.material.checkbox.MaterialCheckBox
+                                android:id="@+id/cbEggs"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Eggs"
+                                android:textColor="@color/white"
+                                android:enabled="false"/>
+                        </LinearLayout>
 
-                        <com.google.android.material.checkbox.MaterialCheckBox
-                            android:id="@+id/cbTreeNuts"
-                            android:text="Tree Nuts"
-                            android:textColor="@color/white"
-                            android:enabled="false"/>
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
 
-                        <com.google.android.material.checkbox.MaterialCheckBox
-                            android:id="@+id/cbSoybeans"
-                            android:text="Soybeans"
-                            android:textColor="@color/white"
-                            android:enabled="false"/>
+                            <com.google.android.material.checkbox.MaterialCheckBox
+                                android:id="@+id/cbPeanuts"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Peanuts"
+                                android:textColor="@color/white"
+                                android:enabled="false"
+                                android:layout_marginStart="15dp"
+                                />
 
-                        <com.google.android.material.checkbox.MaterialCheckBox
-                            android:id="@+id/cbWheat"
-                            android:text="Wheat / Gluten"
-                            android:textColor="@color/white"
-                            android:enabled="false"/>
+                            <com.google.android.material.checkbox.MaterialCheckBox
+                                android:id="@+id/cbTreeNuts"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Tree Nuts"
+                                android:textColor="@color/white"
+                                android:enabled="false"/>
+                        </LinearLayout>
 
-                        <com.google.android.material.checkbox.MaterialCheckBox
-                            android:id="@+id/cbFish"
-                            android:text="Fish"
-                            android:textColor="@color/white"
-                            android:enabled="false"/>
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
 
-                        <com.google.android.material.checkbox.MaterialCheckBox
-                            android:id="@+id/cbShellfish"
-                            android:text="Shellfish"
-                            android:textColor="@color/white"
-                            android:enabled="false"/>
+                            <com.google.android.material.checkbox.MaterialCheckBox
+                                android:id="@+id/cbSoybeans"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Soybeans"
+                                android:textColor="@color/white"
+                                android:enabled="false"
+                                android:layout_marginStart="15dp"
+                                />
 
-                        <com.google.android.material.checkbox.MaterialCheckBox
-                            android:id="@+id/cbSesame"
-                            android:text="Sesame"
-                            android:textColor="@color/white"
-                            android:enabled="false"/>
+                            <com.google.android.material.checkbox.MaterialCheckBox
+                                android:id="@+id/cbWheat"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Wheat / Gluten"
+                                android:textColor="@color/white"
+                                android:enabled="false"/>
+                        </LinearLayout>
 
-                    </GridLayout>
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <com.google.android.material.checkbox.MaterialCheckBox
+                                android:id="@+id/cbFish"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Fish"
+                                android:textColor="@color/white"
+                                android:enabled="false"
+
+                                android:layout_marginStart="15dp"/>
+
+                            <com.google.android.material.checkbox.MaterialCheckBox
+                                android:id="@+id/cbShellfish"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Shellfish"
+                                android:textColor="@color/white"
+                                android:enabled="false"/>
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <com.google.android.material.checkbox.MaterialCheckBox
+                                android:id="@+id/cbSesame"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Sesame"
+                                android:textColor="@color/white"
+                                android:enabled="false"
+                                android:layout_marginStart="15dp"
+                                />
+
+                            <!-- Empty placeholder to keep the grid even -->
+                            <Space
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"/>
+                        </LinearLayout>
+
+                    </LinearLayout>
 
 
                     <!-- ACTION BUTTONS -->

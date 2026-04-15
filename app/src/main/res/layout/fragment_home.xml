@@ -11,16 +11,267 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
+
+        <com.google.android.material.card.MaterialCardView
+
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="12dp"
+            app:cardCornerRadius="22dp"
+            app:cardElevation="0dp"
+            app:strokeWidth="0.8dp"
+            app:strokeColor="#20FFFFFF"
+            android:backgroundTint="#14FFFFFF">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="10dp"
+                >
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="5dp"
+                    android:text="Today's Summary"
+                    android:textColor="@color/white"
+                    android:textStyle="bold"
+                    android:textSize="18sp"
+                    />
+
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1.5dp"
+                    android:background="#9B9B9B"
+                    android:layout_gravity="center"
+                    android:visibility="visible"
+                    android:layout_margin="6dp"
+                    />
+
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    >
+
+                     <LinearLayout
+                         android:layout_width="0dp"
+                         android:layout_height="100dp"
+                         android:layout_weight="1"
+                         android:orientation="vertical"
+                         android:layout_margin="5dp"
+                         >
+
+                         <ImageView
+                             android:layout_width="match_parent"
+                             android:layout_height="42dp"
+                             android:src="@drawable/warning_24px"
+                             app:tint="#FFB300"
+
+                             />
+
+                         <LinearLayout
+                             android:layout_width="match_parent"
+                             android:layout_height="wrap_content"
+                             android:orientation="horizontal"
+                             >
+
+                             <TextView
+                                 android:id="@+id/tvAllergenMatchedCount"
+                                 android:layout_width="wrap_content"
+                                 android:layout_height="wrap_content"
+                                 android:text="1"
+                                 android:textColor="#1a1a1a"
+                                 android:textStyle="bold"
+                                 android:textSize="14sp"
+                                 android:background="@drawable/allergen_count_badge"
+                                 android:paddingStart="8dp"
+                                 android:paddingEnd="8dp"
+                                 android:paddingTop="2dp"
+                                 android:paddingBottom="2dp"
+                                 android:layout_gravity="center_vertical"
+                                 android:layout_marginEnd="8dp"
+                                 android:minWidth="28dp"
+                                 android:gravity="center"/>
+
+                             <TextView
+                                 android:layout_width="0dp"
+                                 android:layout_height="wrap_content"
+                                 android:layout_weight="1"
+                                 android:text="Allergen Matches"
+                                 android:textColor="#FFB300"
+                                 android:textSize="14sp"
+                                 android:textStyle="bold"
+                                 android:layout_gravity="center_vertical"/>
+
+
+                         </LinearLayout>
+
+                     </LinearLayout>
+
+                    <View
+                        android:layout_width="1dp"
+                        android:layout_height="match_parent"
+                        android:background="#9B9B9B"
+                        android:layout_gravity="center"
+                        android:visibility="visible"
+                        />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="100dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:layout_margin="5dp"
+                        >
+
+                        <ImageView
+                            android:layout_width="match_parent"
+                            android:layout_height="42dp"
+                            android:src="@drawable/warning_24px"
+                            app:tint="@color/red"
+
+                            />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            >
+
+                            <TextView
+                                android:id="@+id/tvMarkedAsUnsafeCount"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="1"
+                                android:textColor="#1a1a1a"
+                                android:textStyle="bold"
+                                android:textSize="14sp"
+                                android:background="@drawable/unsafe_count_badge"
+                                android:paddingStart="8dp"
+                                android:paddingEnd="8dp"
+                                android:paddingTop="2dp"
+                                android:paddingBottom="2dp"
+                                android:layout_gravity="center_vertical"
+                                android:layout_marginEnd="8dp"
+                                android:minWidth="28dp"
+                                android:gravity="center"/>
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Unsafe Products"
+                                android:textColor="@color/red"
+                                android:textSize="14sp"
+                                android:textStyle="bold"
+                                android:layout_gravity="center_vertical"/>
+
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="1dp"
+                        android:layout_height="match_parent"
+                        android:background="#9B9B9B"
+                        android:layout_gravity="center"
+                        android:visibility="visible"
+                        />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="100dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:layout_margin="5dp"
+                        >
+
+                        <ImageView
+                            android:layout_width="match_parent"
+                            android:layout_height="42dp"
+                            android:src="@drawable/bookmark_check_24px"
+                            app:tint="#639922"
+
+                            />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            >
+
+                            <TextView
+                                android:id="@+id/tvSavedCount"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="1"
+                                android:textColor="#1a1a1a"
+                                android:textStyle="bold"
+                                android:textSize="14sp"
+                                android:background="@drawable/saved_count_badge"
+                                android:paddingStart="8dp"
+                                android:paddingEnd="8dp"
+                                android:paddingTop="2dp"
+                                android:paddingBottom="2dp"
+                                android:layout_gravity="center_vertical"
+                                android:layout_marginEnd="8dp"
+                                android:minWidth="28dp"
+                                android:gravity="center"/>
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Saved Products"
+                                android:textColor="#639922"
+                                android:textSize="14sp"
+                                android:textStyle="bold"
+                                android:layout_gravity="center_vertical"/>
+
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1.5dp"
+                    android:background="#9B9B9B"
+                    android:layout_gravity="center"
+                    android:visibility="visible"
+                    android:layout_margin="6dp"
+                    />
+
+
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+
+
         <!-- Header -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="My Feed"
-            android:textSize="26sp"
+            android:text="Community Feed"
+            android:textSize="20sp"
             android:gravity="center"
             android:textColor="@color/white"
             android:textStyle="bold"
-            android:paddingTop="16dp"
+            android:paddingTop="8dp"
             android:paddingBottom="12dp"/>
 
         <!-- Feed list -->
@@ -42,7 +293,7 @@
             android:textSize="15sp"
             android:layout_marginTop="20dp"
             android:gravity="center"
-            android:textColor="#80FFFFFF"
+            android:textColor="@color/white"
             android:padding="10dp"
             android:visibility="gone"/>
 

@@ -78,7 +78,7 @@
                     app:boxCornerRadiusTopEnd="16dp"
                     app:boxCornerRadiusBottomStart="16dp"
                     app:boxCornerRadiusBottomEnd="16dp"
-                    app:startIconDrawable="@drawable/email_icon">
+                    app:startIconDrawable="@drawable/account_circle_24px">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/etFullName"
