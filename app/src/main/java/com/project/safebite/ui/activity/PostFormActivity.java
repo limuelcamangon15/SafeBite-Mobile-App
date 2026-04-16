@@ -16,6 +16,7 @@ import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -239,7 +240,7 @@ public class PostFormActivity extends AppCompatActivity {
     private void handleFeelingSelection(MaterialButton clickedButton){
         if(selectedBtn != null){
             selectedBtn.setBackgroundTintList(
-                    ColorStateList.valueOf(getResources().getColor(R.color.black))
+                    ColorStateList.valueOf(0x20FFFFFF)
             );
         }
 
