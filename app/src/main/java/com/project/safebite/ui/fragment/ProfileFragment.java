@@ -188,18 +188,19 @@ public class ProfileFragment extends Fragment {
         });
 
         // Disable editing initially
-        clearPasswordFields();
-        setCheckboxesEnabled(false);
-        etFullName.setEnabled(false);
-        etNewPassword.setEnabled(false);
-        etConfirmNewPassword.setEnabled(false);
-        etOldPassword.setEnabled(false);
-        tilOldPassword.setVisibility(View.GONE);
-        tilNewPassword.setVisibility(View.GONE);
-        tilConfirmNewPassword.setVisibility(View.GONE);
-        vLine.setVisibility(View.GONE);
-        tvChangePassword.setVisibility(View.GONE);
-        btnChangePassword.setVisibility(View.GONE);
+        disableEdit();
+//        clearPasswordFields();
+//        setCheckboxesEnabled(false);
+//        etFullName.setEnabled(false);
+//        etNewPassword.setEnabled(false);
+//        etConfirmNewPassword.setEnabled(false);
+//        etOldPassword.setEnabled(false);
+//        tilOldPassword.setVisibility(View.GONE);
+//        tilNewPassword.setVisibility(View.GONE);
+//        tilConfirmNewPassword.setVisibility(View.GONE);
+//        vLine.setVisibility(View.GONE);
+//        tvChangePassword.setVisibility(View.GONE);
+//        btnChangePassword.setVisibility(View.GONE);
     }
 
     private void enableEditing() {
@@ -266,7 +267,7 @@ public class ProfileFragment extends Fragment {
                 user.updatePassword(newPassword).addOnCompleteListener(updateTask -> {
                     if (updateTask.isSuccessful()) {
                         UIUtil.showSnackbar(requireView(), "Password updated successfully!");
-                        clearPasswordFields();
+                        disableEdit();
                     } else {
                         UIUtil.showSnackbar(requireView(), "Update failed: " + updateTask.getException().getMessage());
                     }
@@ -414,6 +415,10 @@ public class ProfileFragment extends Fragment {
         ref.child("allergies").keepSynced(true);
 
         // Disable editing after save
+        disableEdit();
+    }
+
+    private void disableEdit(){
         clearPasswordFields();
         etFullName.setEnabled(false);
         setCheckboxesEnabled(false);
@@ -430,7 +435,6 @@ public class ProfileFragment extends Fragment {
         btnSave.setVisibility(View.GONE);
         btnEdit.setVisibility(View.VISIBLE);
     }
-
     private void logOut(){
         new MaterialAlertDialogBuilder(requireContext())
                 .setTitle("Log Out")
