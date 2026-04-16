@@ -54,7 +54,7 @@ public class ProfileFragment extends Fragment {
 
     View vLine;
     private TextView tvEmail, tvChangePassword;
-    private MaterialButton btnEdit, btnSave, btnAbout, btnTermsAndConditions, btnVisitWebsite, btnLogOut, btnChangePassword;
+    private MaterialButton btnEditAllergens, btnSaveAllergens, btnAbout, btnTermsAndConditions, btnVisitWebsite, btnLogOut, btnChangePassword, btnEditProfile, btnSaveProfile;
     private TextInputLayout tilOldPassword, tilNewPassword, tilConfirmNewPassword;
 
     private MaterialCheckBox cbMilk, cbEggs, cbPeanuts, cbTreeNuts,
@@ -96,8 +96,10 @@ public class ProfileFragment extends Fragment {
         vLine = view.findViewById(R.id.vLine);
 
         btnChangePassword = view.findViewById(R.id.btnChangePassword);
-        btnEdit = view.findViewById(R.id.btnEdit);
-        btnSave = view.findViewById(R.id.btnSave);
+        btnEditAllergens = view.findViewById(R.id.btnEditAllergens);
+        btnSaveAllergens = view.findViewById(R.id.btnSaveAllergens);
+        btnEditProfile = view.findViewById(R.id.btnEditProfile);
+        btnSaveProfile = view.findViewById(R.id.btnSaveProfile);
         btnLogOut = view.findViewById(R.id.btnLogOut);
 
         cbMilk = view.findViewById(R.id.cbMilk);
@@ -127,8 +129,10 @@ public class ProfileFragment extends Fragment {
         networkViewModel.getIsConnected().observe(getViewLifecycleOwner(), isConnected->{
             isWifiConnected = isConnected;});
 
-        btnEdit.setOnClickListener(v -> enableEditing());
-        btnSave.setOnClickListener(v -> saveProfile());
+        btnEditAllergens.setOnClickListener(v -> enableAllergenEditing());
+        btnSaveAllergens.setOnClickListener(v -> saveAllergens());
+        btnEditProfile.setOnClickListener(v-> enableProfileEditing());
+        btnSaveProfile.setOnClickListener(v-> saveProfile());
         btnLogOut.setOnClickListener(v -> logOut());
 
         mcvAbout.setOnClickListener(v -> displayAbout());
@@ -188,7 +192,8 @@ public class ProfileFragment extends Fragment {
         });
 
         // Disable editing initially
-        disableEdit();
+        disableProfileEdit();
+        disableAllergenEdit();
 //        clearPasswordFields();
 //        setCheckboxesEnabled(false);
 //        etFullName.setEnabled(false);
@@ -203,22 +208,25 @@ public class ProfileFragment extends Fragment {
 //        btnChangePassword.setVisibility(View.GONE);
     }
 
-    private void enableEditing() {
+    private void enableProfileEditing() {
         vLine.setVisibility(View.VISIBLE);
         tvChangePassword.setVisibility(View.VISIBLE);
         tilOldPassword.setVisibility(View.VISIBLE);
         tilNewPassword.setVisibility(View.VISIBLE);
         tilConfirmNewPassword.setVisibility(View.VISIBLE);
         etFullName.setEnabled(true);
-        setCheckboxesEnabled(true);
         etNewPassword.setEnabled(true);
         etOldPassword.setEnabled(true);
         etConfirmNewPassword.setEnabled(true);
-
-        btnEdit.setVisibility(View.GONE);
-        btnSave.setVisibility(View.VISIBLE);
+        btnEditProfile.setVisibility(View.GONE);
         btnChangePassword.setVisibility(View.VISIBLE);
+        btnSaveProfile.setVisibility(View.VISIBLE);
+    }
 
+    private void enableAllergenEditing(){
+        btnEditAllergens.setVisibility(View.GONE);
+        btnSaveAllergens.setVisibility(View.VISIBLE);
+        setCheckboxesEnabled(true);
     }
 
 
@@ -267,7 +275,7 @@ public class ProfileFragment extends Fragment {
                 user.updatePassword(newPassword).addOnCompleteListener(updateTask -> {
                     if (updateTask.isSuccessful()) {
                         UIUtil.showSnackbar(requireView(), "Password updated successfully!");
-                        disableEdit();
+                        disableProfileEdit();
                     } else {
                         UIUtil.showSnackbar(requireView(), "Update failed: " + updateTask.getException().getMessage());
                     }
@@ -285,7 +293,6 @@ public class ProfileFragment extends Fragment {
 
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
 
             }
 
@@ -372,9 +379,7 @@ public class ProfileFragment extends Fragment {
         cbGluten.setEnabled(enabled);
     }
 
-    private void saveProfile() {
-        String fullName = etFullName.getText().toString();
-
+    private void saveAllergens(){
         List<String> selectedAllergens = new ArrayList<>();
 
         if (cbMilk.isChecked()) selectedAllergens.add("Milk");
@@ -390,21 +395,11 @@ public class ProfileFragment extends Fragment {
 
         String uid = auth.getCurrentUser().getUid();
 
-
         // databaseurl/users/uid
         DatabaseReference ref = FirebaseDatabase.getInstance(DatabaseConstants.DATABASE_URL)
                 .getReference("users")
                 .child(uid);
 
-
-        if(!fullName.trim().equals("")) {
-            // ref/fullName
-            ref.child("fullName").setValue(fullName);
-            updateNamesOnPosts(fullName, uid);
-            ref.child("fullName").keepSynced(true);
-        }
-
-        // ref/allergies
         ref.child("allergies").setValue(selectedAllergens)
                 .addOnCompleteListener(task -> {
                     UIUtil.showSnackbar(requireView(), "Changes saved successfully.");
@@ -414,14 +409,44 @@ public class ProfileFragment extends Fragment {
                 });
         ref.child("allergies").keepSynced(true);
 
-        // Disable editing after save
-        disableEdit();
+        disableAllergenEdit();
     }
 
-    private void disableEdit(){
+
+    private void saveProfile() {
+        String fullName = etFullName.getText().toString();
+
+        String uid = auth.getCurrentUser().getUid();
+
+        DatabaseReference ref = FirebaseDatabase.getInstance(DatabaseConstants.DATABASE_URL)
+                .getReference("users")
+                .child(uid);
+
+
+        if(!fullName.trim().equals("")) {
+            // ref/fullName
+            updateNamesOnPosts(fullName, uid);
+            ref.child("fullName").setValue(fullName)
+                    .addOnSuccessListener(e->{ UIUtil.showSnackbar(requireView(), "Changes saved successfully.");})
+                    .addOnFailureListener(e->{ UIUtil.showSnackbar(requireView(), "Failed to save changes.");});
+            ref.child("fullName").keepSynced(true);
+        }else{
+            UIUtil.showSnackbar(requireView(), "Name cannot be empty.");
+            return;
+        }
+
+        // Disable editing after save
+        disableProfileEdit();
+    }
+
+    private void disableAllergenEdit(){
+        setCheckboxesEnabled(false);
+        btnSaveAllergens.setVisibility(View.GONE);
+        btnEditAllergens.setVisibility(View.VISIBLE);
+    }
+    private void disableProfileEdit(){
         clearPasswordFields();
         etFullName.setEnabled(false);
-        setCheckboxesEnabled(false);
         etFullName.setEnabled(false);
         etNewPassword.setEnabled(false);
         etConfirmNewPassword.setEnabled(false);
@@ -432,8 +457,8 @@ public class ProfileFragment extends Fragment {
         vLine.setVisibility(View.GONE);
         tvChangePassword.setVisibility(View.GONE);
         btnChangePassword.setVisibility(View.GONE);
-        btnSave.setVisibility(View.GONE);
-        btnEdit.setVisibility(View.VISIBLE);
+        btnSaveProfile.setVisibility(View.GONE);
+        btnEditProfile.setVisibility(View.VISIBLE);
     }
     private void logOut(){
         new MaterialAlertDialogBuilder(requireContext())

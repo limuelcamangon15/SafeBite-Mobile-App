@@ -79,12 +79,12 @@ public class HomeFragment extends Fragment {
 
         uid = offlineAuth.getUserId();
 
+
         networkViewModel.getIsConnected().observe(getViewLifecycleOwner(), isConnected->{
             isWifiConnected = isConnected;
-
+            Log.d("PostLIST IS Empty?", String.valueOf(postList.isEmpty()));
             if(isWifiConnected || !postList.isEmpty()){
-                recyclerView.setVisibility(View.VISIBLE);
-                tvNoFeed.setVisibility(View.GONE);
+
                 uid = auth.getCurrentUser().getUid();
                 DatabaseReference postsRef = FirebaseDatabase.getInstance(DatabaseConstants.DATABASE_URL)
                         .getReference("posts");
@@ -98,8 +98,19 @@ public class HomeFragment extends Fragment {
                             if(post!=null)postList.add(post);
                         }
 
-                        postList.sort(Comparator.comparingLong(Post::getPostedAt).reversed());
-                        adapter.notifyDataSetChanged();
+
+                        if(postList.isEmpty()){
+                            recyclerView.setVisibility(View.GONE);
+                            tvNoFeed.setVisibility(View.VISIBLE);
+                            tvNoFeed.setText("No posts to show");
+                        }else{
+                            recyclerView.setVisibility(View.VISIBLE);
+                            tvNoFeed.setVisibility(View.GONE);
+                            postList.sort(Comparator.comparingLong(Post::getPostedAt).reversed());
+                            adapter.notifyDataSetChanged();
+                        }
+
+
                     }
 
                     @Override
@@ -107,6 +118,8 @@ public class HomeFragment extends Fragment {
                         Log.e("RTDB", "Failed to read posts", error.toException());
                     }
                 });
+
+
 
             }else{
                 uid = offlineAuth.getUserId();

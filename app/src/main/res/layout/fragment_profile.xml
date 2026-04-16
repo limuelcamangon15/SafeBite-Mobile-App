@@ -218,10 +218,44 @@
                     app:cornerRadius="16dp"
                     android:backgroundTint="@color/green"
                     android:layout_marginTop="10dp"
+                    android:layout_marginBottom="5dp"
                     android:visibility="gone"
                     />
 
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp"
+                    android:gravity="end">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnEditProfile"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Edit"
+                        app:cornerRadius="16dp"
+                        app:icon="@drawable/edit_icon"
+                        app:iconTint="@null"
+                        android:textColor="@color/white"
+                        android:backgroundTint="@color/gray"/>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnSaveProfile"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Save"
+                        app:cornerRadius="16dp"
+                        app:icon="@drawable/check_icon"
+                        app:iconTint="@null"
+                        android:layout_marginStart="10dp"
+                        android:textColor="@color/white"
+                        android:backgroundTint="@color/dark_green"
+                        android:visibility="gone"/>
+
+                </LinearLayout>
             </LinearLayout>
+
+
 
         </com.google.android.material.card.MaterialCardView>
 
@@ -445,7 +479,7 @@
                         android:gravity="end">
 
                         <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btnEdit"
+                            android:id="@+id/btnEditAllergens"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Edit"
@@ -456,7 +490,7 @@
                             android:backgroundTint="@color/gray"/>
 
                         <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btnSave"
+                            android:id="@+id/btnSaveAllergens"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Save"
