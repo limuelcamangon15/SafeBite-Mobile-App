@@ -259,11 +259,11 @@ public class SavedFragment extends Fragment {
             rvSaved.setVisibility(View.GONE);
             tvNoSaved.setVisibility(View.VISIBLE);
             if(currentFilter.equals("Saved")){
-                tvNoSaved.setText("No Saved Products to show");
+                tvNoSaved.setText("No saved products to show");
             }else if(currentFilter.equals("Allergic")){
-                tvNoSaved.setText("No Allergic Products to show");
+                tvNoSaved.setText("No allergic products to show");
             }else{
-                tvNoSaved.setText("No Products to show");
+                tvNoSaved.setText("No products to show");
             }
 
         } else {
