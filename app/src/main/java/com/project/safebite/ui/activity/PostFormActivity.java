@@ -20,6 +20,7 @@ import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.bumptech.glide.Glide;
 import com.google.android.material.button.MaterialButton;
@@ -31,7 +32,9 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.project.safebite.R;
 import com.project.safebite.constants.DatabaseConstants;
+import com.project.safebite.model.NetworkViewModel;
 import com.project.safebite.model.Post;
+import com.project.safebite.utils.FuncUtil;
 import com.project.safebite.utils.UIUtil;
 
 import java.util.HashMap;
@@ -56,6 +59,8 @@ public class PostFormActivity extends AppCompatActivity {
     int postContentLength = 0;
     String fullName = "", postId = "";
     View parent;
+    NetworkViewModel networkViewModel;
+    private boolean isWifiConnected;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,7 +72,7 @@ public class PostFormActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
-
+        networkViewModel = new ViewModelProvider(this).get(NetworkViewModel.class);
         initialize();
     }
 
@@ -88,10 +93,17 @@ public class PostFormActivity extends AppCompatActivity {
         tvAllergens = findViewById(R.id.tvAllergens);
         ivFoodImage = findViewById(R.id.ivFoodImage);
 
+
+
         emoji1.setOnClickListener(v -> handleFeelingSelection(emoji1));
         emoji2.setOnClickListener(v-> handleFeelingSelection(emoji2));
         emoji3.setOnClickListener(v -> handleFeelingSelection(emoji3));
         emoji4.setOnClickListener(v -> handleFeelingSelection(emoji4));
+
+
+        networkViewModel.getIsConnected().observe(this, isConnected->{
+            isWifiConnected = isConnected;});
+        networkViewModel.setConnected(FuncUtil.isConnected(context));
 
         Bundle receivedBundle = getIntent().getExtras();
         if(receivedBundle != null){
@@ -202,6 +214,11 @@ public class PostFormActivity extends AppCompatActivity {
 
     private void updatePost(String postId){
 
+        if(!isWifiConnected){
+            UIUtil.showSnackbar(parent, "You can't update a post in offline mode");
+            return;
+        }
+
         String postContent = etPostContent.getText().toString();
         String allergenList = tvAllergens.getText().toString();
         String brand = tvBrand.getText().toString();
@@ -253,6 +270,11 @@ public class PostFormActivity extends AppCompatActivity {
     }
 
     private void createNewPost(){
+
+        if(!isWifiConnected){
+            UIUtil.showSnackbar(parent, "You can't create a post in offline mode");
+            return;
+        }
 
         String uid = auth.getCurrentUser().getUid();
         String postContent = etPostContent.getText().toString();

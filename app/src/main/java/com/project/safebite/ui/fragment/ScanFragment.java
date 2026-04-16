@@ -581,12 +581,17 @@ public class ScanFragment extends Fragment {
                         recordScan(name, brand, allergenList);
                         updateUI(image, productName, brands, allergies, etBarcode.getText().toString(), "Analyzing...");
                         generateNutriAnalysis(userAllergies, allergenList, nutrimentsValue, name);
-                        if(category!=null && nutriScoreGrade != null || !nutriScoreGrade.isEmpty()){
+                        Log.d("cat and score", category + " " + nutriScoreGrade);
+                        if(category!=null && !nutriScoreGrade.equals("No nutriscore grade")){
                             Log.d("CATEGORY", category);
                             if(!recommendations.isEmpty()){
                                 recommendations.clear();
                             }
                             fetchAlternatives(category, nutriScoreGrade, allergies);
+                        }else{
+                            rvProduct.setVisibility(View.GONE);
+                            tvNoAlt.setVisibility(View.VISIBLE);
+                            tvNoAlt.setText("No alternative products to show");
                         }
 
                     }
@@ -688,6 +693,10 @@ public class ScanFragment extends Fragment {
 
                                     fetchAlternatives(category, nutriscoreGrade, allergenList);
                                     Log.d("Scan", "fetchfromonline");
+                                }else{
+                                    rvProduct.setVisibility(View.GONE);
+                                    tvNoAlt.setVisibility(View.VISIBLE);
+                                    tvNoAlt.setText("No alternative products to show");
                                 }
                             }
 
@@ -832,6 +841,12 @@ public class ScanFragment extends Fragment {
         Log.d("HELLO", "im here");
         RequestQueue r = Volley.newRequestQueue(context);
 
+        if (category == null || category.equalsIgnoreCase("no category") ||
+                originalScore == null || originalScore.equalsIgnoreCase("no nutriscore_grade")) {
+            UIUtil.showSnackbar(parent, "No recommendations available for this product");
+            return;
+        }
+
 
             String url = "https://safebiteapi.vercel.app/api/recommendation?category="+category;
 
@@ -971,11 +986,11 @@ public class ScanFragment extends Fragment {
 
     private void updateRecommendationsUI(List<Product> recommendations){
 
-
+        Log.d("Recommendation", String.valueOf(recommendations.size()));
         if(recommendations.isEmpty()){
             rvProduct.setVisibility(View.GONE);
             tvNoAlt.setVisibility(View.VISIBLE);
-            tvNoAlt.setText("No Alternative Products to Show");
+            tvNoAlt.setText("No alternative products to show");
         }else{
             tvNoAlt.setVisibility(View.GONE);
             rvProduct.setVisibility(View.VISIBLE);
